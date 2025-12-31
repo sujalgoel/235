@@ -2,6 +2,7 @@
   "name": "realitycheck-ai-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "RealityCheck AI - Fake Profile Detector Frontend",
   "dependencies": {
     "axios": "^1.6.0",
@@ -13,9 +14,10 @@
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.16",
+    "esbuild": "^0.27.2",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "vite": "^5.0.7"
+    "vite": "^7.3.0"
   },
   "scripts": {
     "dev": "vite",
