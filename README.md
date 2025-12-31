@@ -343,15 +343,6 @@ This project is submitted for academic evaluation. All rights reserved by the au
 
 ---
 
-## 📧 Contact
-
-For questions or collaboration:
-- **Email**: [Submit through university portal]
-- **Institution**: Amity School of Engineering & Technology
-- **Project Guide**: Dr. Akanshi Gupta
-
----
-
 ## 🔗 Quick Links
 
 - [Setup Guide](./SETUP.md) - Installation instructions
