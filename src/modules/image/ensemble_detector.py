@@ -19,8 +19,12 @@ from PIL import Image
 from pathlib import Path
 import timm
 import clip
+import cv2
+import base64
+import io
 
 from src.modules.base import BaseModule, ModuleResult
+from src.modules.image.explainer import GradCAMExplainer
 from src.utils.logging import get_logger
 from src.utils.exceptions import ModelLoadError, ImageProcessingError, PredictionError
 
@@ -103,6 +107,16 @@ class EnsembleImageDetector(BaseModule):
                 transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
             ])
 
+            # Initialize Grad-CAM on EfficientNet-B7's last conv layer
+            try:
+                # Get the last convolutional block of EfficientNet-B7
+                target_layer = self.efficientnet.conv_head
+                self.grad_cam = GradCAMExplainer(self.efficientnet, target_layer)
+                logger.info("grad_cam_initialized", target="efficientnet_conv_head")
+            except Exception as e:
+                logger.warning("grad_cam_init_failed", error=str(e))
+                self.grad_cam = None
+
             self._is_loaded = True
             logger.info("ensemble_models_loaded",
                        models=["EfficientNet-B7", "XceptionNet", "CLIP"],
@@ -139,7 +153,8 @@ class EnsembleImageDetector(BaseModule):
 
             metadata = {
                 "image_size": image.size,
-                "image_mode": image.mode
+                "image_mode": image.mode,
+                "_original_image_path": image_path if isinstance(input_data, (str, Path)) else None
             }
 
             # Preprocess for each model
@@ -255,11 +270,13 @@ class EnsembleImageDetector(BaseModule):
                 "expected_accuracy": "98%+"
             })
 
-            # Generate explanation
+            # Generate explanation (with Grad-CAM if available)
             explanation = self._generate_explanation(
                 ensemble_prob_real,
                 ensemble_prob_fake,
-                predictions
+                predictions,
+                tensors.get('efficientnet'),
+                input_data=preprocessed_data[1].get('_original_image_path')
             )
 
             logger.info("ensemble_prediction_complete",
@@ -279,8 +296,18 @@ class EnsembleImageDetector(BaseModule):
             logger.error("ensemble_prediction_failed", error=str(e))
             raise PredictionError(f"Ensemble prediction failed: {e}")
 
-    def _generate_explanation(self, prob_real: float, prob_fake: float, predictions: Dict) -> Dict[str, Any]:
-        """Generate detailed explanation from ensemble"""
+    def _numpy_to_base64_png(self, img_array: np.ndarray) -> str:
+        """Convert numpy RGB image to base64 data URI"""
+        img_pil = Image.fromarray(img_array.astype(np.uint8))
+        buffer = io.BytesIO()
+        img_pil.save(buffer, format='PNG')
+        b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        return f"data:image/png;base64,{b64}"
+
+    def _generate_explanation(self, prob_real: float, prob_fake: float, predictions: Dict,
+                               efficientnet_tensor: Optional[torch.Tensor] = None,
+                               input_data: Optional[str] = None) -> Dict[str, Any]:
+        """Generate detailed explanation from ensemble with Grad-CAM"""
 
         explanation = {
             "model": "ENSEMBLE: EfficientNet-B7 + XceptionNet + CLIP",
@@ -360,6 +387,29 @@ class EnsembleImageDetector(BaseModule):
                 "All models lean toward authentic",
                 "Likely genuine photograph"
             ]
+
+        # Generate Grad-CAM heatmap and overlay
+        if self.grad_cam is not None and efficientnet_tensor is not None:
+            try:
+                # Generate heatmap from EfficientNet-B7
+                heatmap = self.grad_cam.generate_heatmap(efficientnet_tensor.clone().requires_grad_(True))
+
+                # Convert heatmap to colored image
+                heatmap_uint8 = np.uint8(255 * heatmap)
+                colored_heatmap = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
+                colored_heatmap_rgb = cv2.cvtColor(colored_heatmap, cv2.COLOR_BGR2RGB)
+                explanation["grad_cam_heatmap"] = self._numpy_to_base64_png(colored_heatmap_rgb)
+
+                # Generate overlay on original image
+                if input_data and Path(input_data).exists():
+                    original = cv2.imread(str(input_data))
+                    original_rgb = cv2.cvtColor(original, cv2.COLOR_BGR2RGB)
+                    overlay = self.grad_cam.overlay_heatmap(original_rgb, heatmap)
+                    explanation["grad_cam_overlay"] = self._numpy_to_base64_png(overlay)
+
+                logger.info("grad_cam_generated")
+            except Exception as e:
+                logger.warning("grad_cam_generation_failed", error=str(e))
 
         return explanation
 

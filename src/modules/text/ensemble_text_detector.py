@@ -26,6 +26,7 @@ from transformers import (
 import re
 
 from src.modules.base import BaseModule, ModuleResult
+from src.modules.text.explainer import TextExplainer
 from src.utils.logging import get_logger
 from src.utils.exceptions import ModelLoadError, TextProcessingError, PredictionError
 
@@ -120,6 +121,16 @@ class EnsembleTextDetector(BaseModule):
                 self.weights['chatgpt_detector'] = 0.90
                 self.weights['openai_detector'] = 0.0
                 self.weights['rule_based'] = 0.10
+
+            # Initialize SHAP/LIME explainer using the OpenAI detector (best model)
+            try:
+                explain_model = self.model2 if self.model2 else self.model1
+                explain_tokenizer = self.model2_tokenizer if self.model2_tokenizer else self.model1_tokenizer
+                self.text_explainer = TextExplainer(explain_model, explain_tokenizer, self._device)
+                logger.info("text_explainer_initialized", method="SHAP/LIME")
+            except Exception as e:
+                logger.warning("text_explainer_init_failed", error=str(e))
+                self.text_explainer = None
 
             self._is_loaded = True
             logger.info("ensemble_text_models_loaded",
@@ -409,6 +420,19 @@ class EnsembleTextDetector(BaseModule):
         # Add rule-based indicators if any
         if 'indicators' in predictions['rule_based'] and predictions['rule_based']['indicators']:
             explanation["ai_indicators"].extend(predictions['rule_based']['indicators'])
+
+        # Generate SHAP/LIME token importance
+        if self.text_explainer is not None:
+            try:
+                # Use LIME (faster than SHAP for short text)
+                lime_result = self.text_explainer.explain_with_lime(text, num_samples=50)
+                if "error" not in lime_result:
+                    explanation["token_importance"] = lime_result.get("top_tokens", [])
+                    explanation["all_tokens"] = lime_result.get("tokens", [])
+                    explanation["all_importance"] = lime_result.get("importance", [])
+                    logger.info("lime_explanation_generated", num_tokens=len(lime_result.get("tokens", [])))
+            except Exception as e:
+                logger.warning("lime_generation_failed", error=str(e))
 
         return explanation
 

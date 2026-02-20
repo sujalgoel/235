@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fig. 2 - Trust Score Interpretation Bands</title>
+<style>
+  body {
+    margin: 0;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+
+<svg width="860" height="420" viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif">
+
+  <!-- Title -->
+  <text x="430" y="35" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Trust Score — Interpretation Bands and Decision Labels</text>
+
+  <!-- ===== SCALE BAR ===== -->
+  <!-- Very Low: 0.0 – 0.3 (Red) -->
+  <rect x="80" y="80" width="198" height="50" rx="4" fill="#EF4444"/>
+  <!-- Low: 0.3 – 0.5 (Orange) -->
+  <rect x="278" y="80" width="132" height="50" rx="0" fill="#F97316"/>
+  <!-- Moderate: 0.5 – 0.7 (Yellow/Amber) -->
+  <rect x="410" y="80" width="132" height="50" rx="0" fill="#EAB308"/>
+  <!-- High: 0.7 – 1.0 (Green) -->
+  <rect x="542" y="80" width="198" height="50" rx="4" fill="#22C55E"/>
+
+  <!-- Round left edge -->
+  <rect x="80" y="80" width="20" height="50" rx="4" fill="#EF4444"/>
+  <!-- Round right edge -->
+  <rect x="720" y="80" width="20" height="50" rx="4" fill="#22C55E"/>
+
+  <!-- Band labels (white, centered in each band) -->
+  <text x="179" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Very Low</text>
+  <text x="344" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Low</text>
+  <text x="476" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">Moderate</text>
+  <text x="641" y="110" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">High</text>
+
+  <!-- ===== TICK MARKS & SCORE VALUES ===== -->
+  <!-- 0.0 -->
+  <line x1="80" y1="130" x2="80" y2="145" stroke="#374151" stroke-width="1.5"/>
+  <text x="80" y="162" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">0.0</text>
+
+  <!-- 0.3 -->
+  <line x1="278" y1="130" x2="278" y2="145" stroke="#374151" stroke-width="1.5"/>
+  <text x="278" y="162" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">0.3</text>
+
+  <!-- 0.5 -->
+  <line x1="410" y1="130" x2="410" y2="145" stroke="#374151" stroke-width="1.5"/>
+  <text x="410" y="162" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">0.5</text>
+
+  <!-- 0.7 -->
+  <line x1="542" y1="130" x2="542" y2="145" stroke="#374151" stroke-width="1.5"/>
+  <text x="542" y="162" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">0.7</text>
+
+  <!-- 1.0 -->
+  <line x1="740" y1="130" x2="740" y2="145" stroke="#374151" stroke-width="1.5"/>
+  <text x="740" y="162" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">1.0</text>
+
+  <!-- ===== DECISION LABEL CARDS ===== -->
+
+  <!-- Very Low card -->
+  <line x1="179" y1="80" x2="179" y2="70" stroke="#EF4444" stroke-width="1.5"/>
+  <line x1="179" y1="70" x2="179" y2="70" stroke="#EF4444" stroke-width="1.5"/>
+  <!-- Connector line up -->
+  <line x1="179" y1="195" x2="179" y2="220" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="89" y="220" width="180" height="100" rx="10" fill="#FEF2F2" stroke="#EF4444" stroke-width="1.5"/>
+  <text x="179" y="248" text-anchor="middle" font-size="22">&#x1F6A8;</text>
+  <text x="179" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#DC2626">Likely Fake</text>
+  <text x="179" y="292" text-anchor="middle" font-size="11" fill="#6b7280">High probability of</text>
+  <text x="179" y="307" text-anchor="middle" font-size="11" fill="#6b7280">fabricated profile</text>
+
+  <!-- Low card -->
+  <line x1="344" y1="195" x2="344" y2="220" stroke="#F97316" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="254" y="220" width="180" height="100" rx="10" fill="#FFF7ED" stroke="#F97316" stroke-width="1.5"/>
+  <text x="344" y="248" text-anchor="middle" font-size="22">&#x26A0;&#xFE0F;</text>
+  <text x="344" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#EA580C">Suspicious</text>
+  <text x="344" y="292" text-anchor="middle" font-size="11" fill="#6b7280">Multiple warning</text>
+  <text x="344" y="307" text-anchor="middle" font-size="11" fill="#6b7280">signs detected</text>
+
+  <!-- Moderate card -->
+  <line x1="476" y1="195" x2="476" y2="220" stroke="#EAB308" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="386" y="220" width="180" height="100" rx="10" fill="#FEFCE8" stroke="#EAB308" stroke-width="1.5"/>
+  <text x="476" y="248" text-anchor="middle" font-size="22">&#x26A1;</text>
+  <text x="476" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#CA8A04">Moderate</text>
+  <text x="476" y="292" text-anchor="middle" font-size="11" fill="#6b7280">Some inconsistencies;</text>
+  <text x="476" y="307" text-anchor="middle" font-size="11" fill="#6b7280">review recommended</text>
+
+  <!-- High card -->
+  <line x1="641" y1="195" x2="641" y2="220" stroke="#22C55E" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <rect x="551" y="220" width="180" height="100" rx="10" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="641" y="248" text-anchor="middle" font-size="22">&#x2705;</text>
+  <text x="641" y="272" text-anchor="middle" font-size="13" font-weight="700" fill="#16A34A">Likely Real</text>
+  <text x="641" y="292" text-anchor="middle" font-size="11" fill="#6b7280">High confidence in</text>
+  <text x="641" y="307" text-anchor="middle" font-size="11" fill="#6b7280">profile authenticity</text>
+
+  <!-- ===== RANGE SUMMARY TABLE ===== -->
+  <line x1="130" y1="350" x2="730" y2="350" stroke="#e5e7eb" stroke-width="1"/>
+
+  <text x="179" y="375" text-anchor="middle" font-size="11" font-weight="600" fill="#DC2626">0.00 – 0.29</text>
+  <text x="344" y="375" text-anchor="middle" font-size="11" font-weight="600" fill="#EA580C">0.30 – 0.49</text>
+  <text x="476" y="375" text-anchor="middle" font-size="11" font-weight="600" fill="#CA8A04">0.50 – 0.69</text>
+  <text x="641" y="375" text-anchor="middle" font-size="11" font-weight="600" fill="#16A34A">0.70 – 1.00</text>
+
+  <!-- Caption -->
+  <text x="430" y="410" text-anchor="middle" font-size="12" fill="#6b7280" font-style="italic">Fig. 2: Interpretation bands and decision labels of Trust Score (Very Low to High).</text>
+
+</svg>
+
+</body>
+</html>
