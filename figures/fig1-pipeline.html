@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fig. 1 - Multimodal Fake Profile Detection Pipeline</title>
+<style>
+  body {
+    margin: 0;
+    background: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+</style>
+</head>
+<body>
+
+<svg width="920" height="820" viewBox="0 0 920 820" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif">
+  <defs>
+    <!-- Gray arrowhead (points in +x direction, rotates with line) -->
+    <marker id="ag" markerWidth="8" markerHeight="10" refX="8" refY="5" orient="auto">
+      <polygon points="0,0 8,5 0,10" fill="#9ca3af"/>
+    </marker>
+    <!-- Purple arrowhead -->
+    <marker id="ap" markerWidth="8" markerHeight="10" refX="8" refY="5" orient="auto">
+      <polygon points="0,0 8,5 0,10" fill="#7C3AED"/>
+    </marker>
+  </defs>
+
+  <!-- ===== TITLE ===== -->
+  <text x="460" y="35" text-anchor="middle" font-size="16" font-weight="600" fill="#1a1a1a">Multimodal Fake Profile Detection — System Pipeline</text>
+
+  <!-- ===== USER INPUT BOX ===== -->
+  <rect x="340" y="58" width="240" height="46" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="2"/>
+  <text x="460" y="86" text-anchor="middle" font-size="14" font-weight="600" fill="#3730A3">User Profile Input</text>
+
+  <!-- Arrow: Input → Input Streams -->
+  <line x1="460" y1="104" x2="460" y2="134" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+
+  <!-- ===== INPUT STREAM BOXES ===== -->
+  <rect x="145" y="145" width="150" height="38" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="220" y="169" text-anchor="middle" font-size="12" font-weight="500" fill="#166534">Profile Image</text>
+
+  <rect x="385" y="145" width="150" height="38" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="460" y="169" text-anchor="middle" font-size="12" font-weight="500" fill="#166534">Bio Text</text>
+
+  <rect x="625" y="145" width="150" height="38" rx="6" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+  <text x="700" y="169" text-anchor="middle" font-size="12" font-weight="500" fill="#166534">Metadata</text>
+
+  <!-- Branching arrows: each input stream → its module -->
+  <!-- Left: Profile Image → Image Module -->
+  <line x1="220" y1="183" x2="220" y2="228" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+  <!-- Center: Bio Text → Text Module -->
+  <line x1="460" y1="183" x2="460" y2="228" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+  <!-- Right: Metadata → Metadata Module -->
+  <line x1="700" y1="183" x2="700" y2="228" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+
+  <!-- ===== IMAGE MODULE ===== -->
+  <rect x="100" y="240" width="240" height="110" rx="8" fill="#fff" stroke="#d1d5db" stroke-width="2"/>
+  <!-- Header bg -->
+  <rect x="101" y="241" width="238" height="32" rx="7" fill="#2563EB"/>
+  <rect x="101" y="260" width="238" height="13" fill="#2563EB"/>
+  <text x="220" y="262" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Image Analysis Module</text>
+  <!-- Body items -->
+  <text x="120" y="295" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="133" y="295" font-size="11.5" fill="#4b5563">EfficientNet-B7</text>
+  <text x="318" y="295" text-anchor="end" font-size="10" fill="#9ca3af">50%</text>
+  <text x="120" y="315" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="133" y="315" font-size="11.5" fill="#4b5563">XceptionNet</text>
+  <text x="318" y="315" text-anchor="end" font-size="10" fill="#9ca3af">40%</text>
+  <text x="120" y="335" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="133" y="335" font-size="11.5" fill="#4b5563">CLIP ViT-L/14</text>
+  <text x="318" y="335" text-anchor="end" font-size="10" fill="#9ca3af">10%</text>
+
+  <!-- ===== TEXT MODULE ===== -->
+  <rect x="340" y="240" width="240" height="110" rx="8" fill="#fff" stroke="#d1d5db" stroke-width="2"/>
+  <rect x="341" y="241" width="238" height="32" rx="7" fill="#059669"/>
+  <rect x="341" y="260" width="238" height="13" fill="#059669"/>
+  <text x="460" y="262" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Text Analysis Module</text>
+  <text x="360" y="295" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="373" y="295" font-size="11.5" fill="#4b5563">RoBERTa (OpenAI)</text>
+  <text x="558" y="295" text-anchor="end" font-size="10" fill="#9ca3af">70%</text>
+  <text x="360" y="315" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="373" y="315" font-size="11.5" fill="#4b5563">ChatGPT Detector</text>
+  <text x="558" y="315" text-anchor="end" font-size="10" fill="#9ca3af">20%</text>
+  <text x="360" y="335" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="373" y="335" font-size="11.5" fill="#4b5563">Rule-Based Patterns</text>
+  <text x="558" y="335" text-anchor="end" font-size="10" fill="#9ca3af">10%</text>
+
+  <!-- ===== METADATA MODULE ===== -->
+  <rect x="580" y="240" width="240" height="110" rx="8" fill="#fff" stroke="#d1d5db" stroke-width="2"/>
+  <rect x="581" y="241" width="238" height="32" rx="7" fill="#D97706"/>
+  <rect x="581" y="260" width="238" height="13" fill="#D97706"/>
+  <text x="700" y="262" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">Metadata Analysis Module</text>
+  <text x="600" y="295" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="613" y="295" font-size="11.5" fill="#4b5563">EXIF Data Extraction</text>
+  <text x="600" y="315" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="613" y="315" font-size="11.5" fill="#4b5563">Camera Signature Check</text>
+  <text x="600" y="335" font-size="11.5" fill="#9ca3af">&#9656;</text>
+  <text x="613" y="335" font-size="11.5" fill="#4b5563">Consistency Scoring</text>
+
+  <!-- Arrows: Modules → Explainability -->
+  <line x1="220" y1="350" x2="220" y2="390" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+  <line x1="460" y1="350" x2="460" y2="390" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+  <line x1="700" y1="350" x2="700" y2="390" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+
+  <!-- ===== EXPLAINABILITY: GRAD-CAM ===== -->
+  <rect x="100" y="402" width="240" height="72" rx="8" fill="#fafbff" stroke="#a5b4fc" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="101" y="403" width="238" height="26" rx="7" fill="#EEF2FF"/>
+  <rect x="101" y="418" width="238" height="11" fill="#EEF2FF"/>
+  <text x="220" y="420" text-anchor="middle" font-size="11" font-weight="600" fill="#6366F1">Explainability: Grad-CAM</text>
+  <text x="120" y="448" font-size="11" fill="#6b7280">Heatmap overlay highlighting</text>
+  <text x="120" y="463" font-size="11" fill="#6b7280">suspicious facial regions</text>
+
+  <!-- ===== EXPLAINABILITY: SHAP/LIME ===== -->
+  <rect x="340" y="402" width="240" height="72" rx="8" fill="#fafbff" stroke="#a5b4fc" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="341" y="403" width="238" height="26" rx="7" fill="#EEF2FF"/>
+  <rect x="341" y="418" width="238" height="11" fill="#EEF2FF"/>
+  <text x="460" y="420" text-anchor="middle" font-size="11" font-weight="600" fill="#6366F1">Explainability: SHAP / LIME</text>
+  <text x="360" y="448" font-size="11" fill="#6b7280">Token importance scores with</text>
+  <text x="360" y="463" font-size="11" fill="#6b7280">highlighted linguistic cues</text>
+
+  <!-- ===== FORENSIC REPORT ===== -->
+  <rect x="580" y="402" width="240" height="72" rx="8" fill="#fafbff" stroke="#a5b4fc" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <rect x="581" y="403" width="238" height="26" rx="7" fill="#EEF2FF"/>
+  <rect x="581" y="418" width="238" height="11" fill="#EEF2FF"/>
+  <text x="700" y="420" text-anchor="middle" font-size="11" font-weight="600" fill="#6366F1">Forensic Report</text>
+  <text x="600" y="448" font-size="11" fill="#6b7280">EXIF anomalies and metadata</text>
+  <text x="600" y="463" font-size="11" fill="#6b7280">consistency flags</text>
+
+  <!-- ===== MERGING ARROWS: Explainability → Fusion ===== -->
+  <!-- 3 vertical lines down from each explain box to horizontal bar -->
+  <line x1="220" y1="474" x2="220" y2="510" stroke="#7C3AED" stroke-width="2"/>
+  <line x1="460" y1="474" x2="460" y2="510" stroke="#7C3AED" stroke-width="2"/>
+  <line x1="700" y1="474" x2="700" y2="510" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Horizontal bar -->
+  <line x1="220" y1="510" x2="700" y2="510" stroke="#7C3AED" stroke-width="2"/>
+  <!-- Single stem down from center of bar -->
+  <line x1="460" y1="510" x2="460" y2="540" stroke="#7C3AED" stroke-width="2" marker-end="url(#ap)"/>
+
+  <!-- ===== FUSION ENGINE ===== -->
+  <rect x="325" y="552" width="270" height="52" rx="8" fill="url(#fusionGrad)" stroke="#7C3AED" stroke-width="2"/>
+  <defs>
+    <linearGradient id="fusionGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7C3AED"/>
+      <stop offset="100%" style="stop-color:#6D28D9"/>
+    </linearGradient>
+  </defs>
+  <text x="460" y="575" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Weighted Fusion Engine</text>
+  <text x="460" y="594" text-anchor="middle" font-size="11" fill="#fff" opacity="0.85" font-family="Courier New, monospace">S = w&#x2081;&#xB7;I + w&#x2082;&#xB7;T + w&#x2083;&#xB7;M</text>
+
+  <!-- Arrow: Fusion → Trust Score -->
+  <line x1="460" y1="604" x2="460" y2="644" stroke="#9ca3af" stroke-width="2" marker-end="url(#ag)"/>
+
+  <!-- ===== TRUST SCORE OUTPUT ===== -->
+  <rect x="330" y="656" width="260" height="52" rx="8" fill="url(#trustGrad)" stroke="#059669" stroke-width="2"/>
+  <defs>
+    <linearGradient id="trustGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#059669"/>
+      <stop offset="100%" style="stop-color:#047857"/>
+    </linearGradient>
+  </defs>
+  <text x="460" y="679" text-anchor="middle" font-size="14" font-weight="600" fill="#fff">Trust Score Output</text>
+  <text x="460" y="697" text-anchor="middle" font-size="11" fill="#fff" opacity="0.85">Very Low &#xB7; Low &#xB7; Moderate &#xB7; High</text>
+
+  <!-- ===== CAPTION ===== -->
+  <text x="460" y="760" text-anchor="middle" font-size="12" fill="#6b7280" font-style="italic">Fig. 1: Workflow of the multimodal pipeline — image, text, and metadata streams with weighted fusion.</text>
+
+</svg>
+
+</body>
+</html>

@@ -359,13 +359,114 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
           {text_analysis.explanation.ai_indicators && (
             <div>
               <h4 className="text-sm font-semibold text-red-700 mb-2">
-                ⚠️ AI-Generated Indicators:
+                AI-Generated Indicators:
               </h4>
               <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
                 {text_analysis.explanation.ai_indicators.map((indicator, idx) => (
                   <li key={idx}>{indicator}</li>
                 ))}
               </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ========================================
+          SHAP/LIME TOKEN IMPORTANCE VISUALIZATION
+          ========================================
+          Highlights individual tokens (words) based on their contribution
+          to the AI/human classification. Red = AI indicator, Green = human indicator.
+          Uses LIME token importance scores from the backend.
+      */}
+      {text_analysis && text_analysis.explanation &&
+       text_analysis.explanation.all_tokens && text_analysis.explanation.all_importance && (
+        <div className="card mb-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+            <span className="mr-2">&#128300;</span>
+            SHAP / LIME Token Importance
+          </h3>
+          <p className="text-sm text-gray-500 mb-4">
+            Each word is highlighted based on its influence on the AI detection model.
+            <span className="inline-block ml-2 px-2 py-0.5 bg-red-100 text-red-700 rounded text-xs font-medium">Red = AI indicator</span>
+            <span className="inline-block ml-2 px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-medium">Green = Human indicator</span>
+          </p>
+
+          {/* Highlighted token display */}
+          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200 leading-relaxed">
+            {text_analysis.explanation.all_tokens.map((token, idx) => {
+              const importance = text_analysis.explanation.all_importance[idx] || 0;
+              const absImportance = Math.abs(importance);
+              const maxOpacity = 0.7;
+              const opacity = Math.min(absImportance * 5, maxOpacity);
+
+              let bgColor, textColor;
+              if (importance > 0.01) {
+                // Positive = pushes toward AI
+                bgColor = `rgba(239, 68, 68, ${opacity})`;
+                textColor = opacity > 0.3 ? '#7f1d1d' : '#991b1b';
+              } else if (importance < -0.01) {
+                // Negative = pushes toward human
+                bgColor = `rgba(34, 197, 94, ${opacity})`;
+                textColor = opacity > 0.3 ? '#14532d' : '#166534';
+              } else {
+                bgColor = 'transparent';
+                textColor = '#374151';
+              }
+
+              // Clean up subword tokens (remove leading ## or similar)
+              const displayToken = token.replace(/^##/, '').replace(/^Ġ/, ' ').replace(/^▁/, ' ');
+
+              return (
+                <span
+                  key={idx}
+                  title={`Importance: ${importance.toFixed(4)}`}
+                  style={{
+                    backgroundColor: bgColor,
+                    color: textColor,
+                    padding: '2px 4px',
+                    borderRadius: '3px',
+                    margin: '1px',
+                    display: 'inline',
+                    fontSize: '14px',
+                    fontWeight: absImportance > 0.1 ? '600' : '400',
+                    cursor: 'default'
+                  }}
+                >
+                  {displayToken}
+                </span>
+              );
+            })}
+          </div>
+
+          {/* Top important tokens bar chart */}
+          {text_analysis.explanation.token_importance &&
+           text_analysis.explanation.token_importance.length > 0 && (
+            <div className="mt-4">
+              <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                Top Influential Tokens:
+              </h4>
+              <div className="space-y-2">
+                {text_analysis.explanation.token_importance.slice(0, 8).map((item, idx) => {
+                  const isAI = item.importance > 0;
+                  const barWidth = Math.min(Math.abs(item.importance) * 500, 100);
+                  return (
+                    <div key={idx} className="flex items-center gap-3">
+                      <span className="text-sm font-mono w-28 text-right truncate text-gray-700">
+                        {item.token.replace(/^##/, '').replace(/^Ġ/, '').replace(/^▁/, '')}
+                      </span>
+                      <div className="flex-1 h-5 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${isAI ? 'bg-red-400' : 'bg-green-400'}`}
+                          style={{ width: `${barWidth}%` }}
+                        />
+                      </div>
+                      <span className={`text-xs font-medium w-16 ${isAI ? 'text-red-600' : 'text-green-600'}`}>
+                        {item.importance > 0 ? '+' : ''}{item.importance.toFixed(3)}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
