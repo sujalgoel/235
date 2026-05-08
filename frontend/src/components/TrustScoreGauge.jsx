@@ -38,12 +38,12 @@ const TrustScoreGauge = ({ score, size = 'large' }) => {
           fill="none"
           className="text-gray-200"
         />
-        {/* Progress circle */}
+        {/* Progress arc — solid stroke in the band's color. */}
         <circle
           cx="50%"
           cy="50%"
           r="90"
-          stroke="url(#gradient)"
+          stroke={band.stop}
           strokeWidth="12"
           fill="none"
           strokeDasharray={circumference}
@@ -51,14 +51,6 @@ const TrustScoreGauge = ({ score, size = 'large' }) => {
           strokeLinecap="round"
           className="transition-all duration-1000 ease-out"
         />
-        <defs>
-          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            {/* SVG ignores Tailwind classes — set the stop color directly
-                so the gauge actually renders the correct band color. */}
-            <stop offset="0%" stopColor={band.stop} />
-            <stop offset="100%" stopColor={band.stop} />
-          </linearGradient>
-        </defs>
       </svg>
 
       {/* Center content */}

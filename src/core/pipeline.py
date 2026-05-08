@@ -207,47 +207,42 @@ class AnalysisPipeline:
         }
 
     def analyze_image_only(self, image_path: str) -> Dict[str, Any]:
-        """
-        Analyze image only (no text or metadata).
-
-        Args:
-            image_path: Path to image
-
-        Returns:
-            Image analysis results
-        """
+        """Analyze image only. Returns the same envelope as analyze_profile
+        with text_analysis = None and trust_score sourced from image."""
         if not self._initialized:
             self.initialize()
 
         logger.info("analyzing_image_only", path=image_path)
-
+        start_time = time.time()
         result = self.image_module(image_path, explain=True)
+        trust_result = self.trust_scorer.compute_trust_score(image_result=result)
 
         return {
+            "profile_id": "unknown",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "image_analysis": result.to_dict()
+            "image_analysis": result.to_dict(),
+            "text_analysis": None,
+            "trust_score_result": trust_result.to_dict(),
+            "processing_time_ms": (time.time() - start_time) * 1000,
         }
 
     def analyze_text_only(self, text: str) -> Dict[str, Any]:
-        """
-        Analyze text only (no image).
-
-        Args:
-            text: Profile bio or description
-
-        Returns:
-            Text analysis results
-        """
+        """Analyze text only. Same envelope shape as analyze_profile."""
         if not self._initialized:
             self.initialize()
 
         logger.info("analyzing_text_only", length=len(text))
-
+        start_time = time.time()
         result = self.text_module(text, explain=True)
+        trust_result = self.trust_scorer.compute_trust_score(text_result=result)
 
         return {
+            "profile_id": "unknown",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "text_analysis": result.to_dict()
+            "image_analysis": None,
+            "text_analysis": result.to_dict(),
+            "trust_score_result": trust_result.to_dict(),
+            "processing_time_ms": (time.time() - start_time) * 1000,
         }
 
     def get_status(self) -> Dict[str, Any]:

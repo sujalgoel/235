@@ -136,12 +136,24 @@ export const analyzeImage = async (image) => {
  * @returns {Promise<Object>} Health status object
  * @throws {Error} If backend is not reachable
  */
+// Track health-check failure streaks so we don't spam the console with the
+// same "backend is down" error every 30 seconds. We log once per outage and
+// once when the backend recovers.
+let _healthFailing = false;
+
 export const healthCheck = async () => {
   try {
     const response = await axios.get(`${API_ROOT}/health`);
+    if (_healthFailing) {
+      console.info('Health check recovered.');
+      _healthFailing = false;
+    }
     return response.data;
   } catch (error) {
-    console.error('Health check failed:', error);
+    if (!_healthFailing) {
+      console.error('Health check failed:', error?.message ?? error);
+      _healthFailing = true;
+    }
     throw error;
   }
 };

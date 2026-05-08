@@ -14,17 +14,30 @@ import numpy as np
 import torch
 
 from src.core.pipeline import AnalysisPipeline
-from src.api.schemas.request import TextAnalysisRequest
 from src.api.schemas.response import (
-    ProfileAnalysisResponse,
-    ImageAnalysisResponse,
-    TextAnalysisResponse,
     HealthResponse,
-    ErrorResponse
+    ErrorResponse,
 )
 from src.utils.logging import configure_logging, get_logger
 from src.utils.exceptions import RealityCheckException
 from config.base import get_config
+
+
+def _shape_response(result: Dict[str, Any]) -> Dict[str, Any]:
+    """Move trust_score_result fields to the top level so every endpoint
+    emits the same envelope: { final_trust_score, interpretation, trust_level,
+    trust_score_details, image_analysis, text_analysis, ... }."""
+    serializable = make_json_serializable(result)
+    if "trust_score_result" in serializable:
+        trust_data = serializable.pop("trust_score_result")
+        serializable["final_trust_score"] = trust_data.get("trust_score", 0.0)
+        serializable["interpretation"] = trust_data.get("interpretation", "")
+        serializable["trust_level"] = trust_data.get("trust_level", "")
+        serializable["trust_score_details"] = {
+            "module_scores": trust_data.get("module_scores", {}),
+            "contributing_factors": trust_data.get("contributing_factors", {}),
+        }
+    return serializable
 
 
 async def _read_upload_with_limit(upload: UploadFile, max_bytes: int) -> bytes:
@@ -216,25 +229,7 @@ async def analyze_profile(
                 profile_id=profile_id      # Optional identifier for logging
             )
 
-            # Step 4: Convert numpy/torch objects to JSON-serializable types
-            # AI models return numpy arrays and tensors that can't be directly serialized
-            serializable_result = make_json_serializable(result)
-
-            # Step 5: Flatten nested trust score data for easier frontend consumption
-            # Move trust_score_result fields to top level for cleaner API response
-            if "trust_score_result" in serializable_result:
-                trust_data = serializable_result.pop("trust_score_result")
-                # Extract main trust score metrics
-                serializable_result["final_trust_score"] = trust_data.get("trust_score", 0.0)
-                serializable_result["interpretation"] = trust_data.get("interpretation", "")
-                serializable_result["trust_level"] = trust_data.get("trust_level", "")
-                # Preserve detailed analysis for frontend display
-                serializable_result["trust_score_details"] = {
-                    "module_scores": trust_data.get("module_scores", {}),
-                    "contributing_factors": trust_data.get("contributing_factors", {})
-                }
-
-            return JSONResponse(content=serializable_result)
+            return JSONResponse(content=_shape_response(result))
 
         finally:
             # Always clean up temporary file. OSError covers both permission
@@ -283,8 +278,7 @@ async def analyze_image(image: UploadFile = File(..., description="Image to anal
 
         try:
             result = pipeline.analyze_image_only(tmp_path)
-            serializable_result = make_json_serializable(result)
-            return JSONResponse(content=serializable_result)
+            return JSONResponse(content=_shape_response(result))
         finally:
             try:
                 os.unlink(tmp_path)
@@ -301,28 +295,17 @@ async def analyze_image(image: UploadFile = File(..., description="Image to anal
         )
 
 
-@app.post("/api/v1/analyze/text", response_model=TextAnalysisResponse, tags=["Analysis"])
+@app.post("/api/v1/analyze/text", tags=["Analysis"])
 async def analyze_text(text: str = Form(..., min_length=10, max_length=1000, description="Text to analyze")):
     """
     Analyze text only (no image analysis).
 
-    Returns:
-    - Human vs AI classification
-    - SHAP/LIME token importance
-    - Linguistic pattern analysis
+    Returns the same envelope as /analyze/profile with image_analysis = null.
     """
     try:
         logger.info("text_analysis_request", length=len(text))
-
         result = pipeline.analyze_text_only(text)
-        if "text_analysis" not in result:
-            logger.error("pipeline_missing_text_analysis", keys=list(result.keys()))
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Text analysis failed"
-            )
-        serializable_result = make_json_serializable(result["text_analysis"])
-        return JSONResponse(content=serializable_result)
+        return JSONResponse(content=_shape_response(result))
 
     except HTTPException:
         raise
