@@ -215,10 +215,15 @@ class TrustScorer:
         # - Which weights were actually used (after adjustment)
         # - Which modules were available
         # - Average confidence across all modules
+        # np.mean over an empty list returns nan; guard so the metadata
+        # is JSON-serializable and downstream consumers see a real number.
+        confidence_values = list(confidences.values())
+        average_confidence = float(np.mean(confidence_values)) if confidence_values else 0.0
+
         metadata = {
             "weights_used": adjusted_weights,
             "modules_available": list(scores.keys()),
-            "average_confidence": np.mean(list(confidences.values()))
+            "average_confidence": average_confidence,
         }
 
         return TrustScoreResult(
@@ -296,10 +301,10 @@ class TrustScorer:
         # Base interpretation from trust level
         base_interpretation = self.config.get_interpretation(trust_score)
 
-        # Add details about module agreement
+        # Add details about module agreement (only meaningful with 2+ scores).
         score_values = list(scores.values())
         if len(score_values) > 1:
-            score_std = np.std(score_values)
+            score_std = float(np.std(score_values))
 
             if score_std < 0.1:
                 agreement = "All modules strongly agree."
@@ -310,10 +315,13 @@ class TrustScorer:
 
             base_interpretation += f" {agreement}"
 
-        # Add confidence note
-        avg_confidence = np.mean(list(confidences.values()))
-        if avg_confidence < 0.6:
-            base_interpretation += " Note: Low confidence across modules."
+        # Add confidence note. Skip when no confidences are available so we
+        # don't compare nan with 0.6 and silently emit the wrong note.
+        confidence_values = list(confidences.values())
+        if confidence_values:
+            avg_confidence = float(np.mean(confidence_values))
+            if avg_confidence < 0.6:
+                base_interpretation += " Note: Low confidence across modules."
 
         return base_interpretation
 
@@ -369,23 +377,6 @@ class TrustScorer:
                 factors['metadata'].extend([a.get("description", "") for a in anomalies])
 
         return factors
-
-    def calibrate_score(self, raw_score: float, confidence: float) -> float:
-        """
-        Apply confidence-based calibration to score.
-
-        Lower confidence scores are adjusted towards 0.5 (uncertain).
-
-        Args:
-            raw_score: Raw prediction score
-            confidence: Model confidence
-
-        Returns:
-            Calibrated score
-        """
-        # Calibration: pull low-confidence scores towards 0.5
-        calibrated = raw_score * confidence + 0.5 * (1 - confidence)
-        return calibrated
 
     def ensemble_predictions(
         self,

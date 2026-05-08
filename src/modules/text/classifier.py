@@ -3,6 +3,7 @@ DistilBERT text authenticity classifier with SHAP/LIME explainability.
 """
 
 from typing import Dict, Any, Tuple, Optional
+import re
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -138,7 +139,6 @@ class TextAuthenticityModule(BaseModule):
         text = ' '.join(text.split())
 
         # Remove URLs (optional)
-        import re
         text = re.sub(r'http\S+', '', text)
 
         # Remove mentions/hashtags (optional for social media)

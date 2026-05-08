@@ -9,6 +9,7 @@ Uses Hello-SimpleAI's ChatGPT Detector (Hello-SimpleAI/chatgpt-detector-roberta)
 """
 
 from typing import Dict, Any, Tuple, Optional
+import re
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -136,8 +137,6 @@ class DeBERTaTextDetector(BaseModule):
 
     def _clean_text(self, text: str) -> str:
         """Clean and normalize text"""
-        import re
-
         # Remove excessive whitespace
         text = ' '.join(text.split())
 
@@ -148,8 +147,6 @@ class DeBERTaTextDetector(BaseModule):
 
     def _split_sentences(self, text: str) -> list:
         """Split text into sentences for analysis"""
-        import re
-
         # Simple sentence splitting (can be improved with nltk if needed)
         sentences = re.split(r'[.!?]+', text)
         sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
