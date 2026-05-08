@@ -1,84 +1,48 @@
-"""
-End-to-end analysis pipeline orchestrating all modules.
-"""
+"""End-to-end analysis pipeline orchestrating image + text detection."""
 
-from typing import Dict, Any, Optional
 import time
-import os
-from pathlib import Path
+from typing import Any, Dict, Optional
 
-from src.modules.image.classifier import ImageAuthenticityModule
-from src.modules.text.classifier import TextAuthenticityModule
-from src.modules.image.ensemble_detector import EnsembleImageDetector
-from src.modules.text.ensemble_text_detector import EnsembleTextDetector
-from src.modules.fusion.trust_scorer import TrustScorer, TrustScoreResult
-from src.utils.logging import get_logger
-from src.utils.exceptions import RealityCheckException
 from config.base import Config
+from src.modules.fusion.trust_scorer import TrustScorer
+from src.utils.exceptions import RealityCheckException
+from src.utils.logging import get_logger
 
 logger = get_logger(__name__)
 
 
 class AnalysisPipeline:
-    """
-    Complete profile analysis pipeline.
+    """Orchestrate ensemble image and text detection plus trust-score fusion.
 
-    Orchestrates:
-    1. Image authenticity detection (ResNet-18 + YOLOv8 + Grad-CAM)
-    2. Text authenticity detection (DistilBERT + SHAP/LIME)
-    3. Metadata forensics (PyExifTool + scoring)
-    4. Multimodal fusion (Trust Score computation)
+    Heavy ML imports (timm, transformers, clip, cv2) are deferred to
+    `initialize()` so that simply constructing the pipeline — or importing
+    the FastAPI app for tests — does not require those packages.
     """
 
     def __init__(self, config: Optional[Config] = None):
-        """
-        Initialize analysis pipeline.
-
-        Args:
-            config: Configuration object (uses default if None)
-        """
         self.config = config or Config()
-
-        # Check if cloud mode is enabled
-        self.use_cloud = os.getenv("USE_CLOUD_APIS", "false").lower() == "true"
-
-        # Initialize modules. Metadata analysis is intentionally disabled
-        # (uploaded images have stripped EXIF) so we don't load that module.
         self.image_module = None
         self.text_module = None
-        self.trust_scorer = None
-
+        self.trust_scorer: Optional[TrustScorer] = None
         self._initialized = False
 
-    def initialize(self):
-        """Initialize all modules (lazy loading)"""
+    def initialize(self) -> None:
         if self._initialized:
             return
 
-        mode = "ensemble" if self.use_cloud else "single_model"
-        logger.info("initializing_pipeline", mode=mode)
+        # Defer the heavy imports until first use.
+        from src.modules.image.ensemble_detector import EnsembleImageDetector
+        from src.modules.text.ensemble_text_detector import EnsembleTextDetector
 
+        logger.info("initializing_pipeline")
         try:
-            if self.use_cloud:
-                # Local ensemble: EfficientNet-B7 + XceptionNet + CLIP for images,
-                # ChatGPT-detector + OpenAI-detector + rules for text.
-                self.image_module = EnsembleImageDetector(self.config.MODEL.__dict__)
-                self.text_module = EnsembleTextDetector(self.config.MODEL.__dict__)
-            else:
-                # Single-model fallback: ResNet-18 + DistilBERT.
-                self.image_module = ImageAuthenticityModule(self.config.MODEL.__dict__)
-                self.text_module = TextAuthenticityModule(self.config.MODEL.__dict__)
-
-            # Initialize trust scorer
+            self.image_module = EnsembleImageDetector(self.config.MODEL.__dict__)
+            self.text_module = EnsembleTextDetector(self.config.MODEL.__dict__)
             self.trust_scorer = TrustScorer(self.config.FUSION)
-
-            # Load models
             self.image_module.load_model()
             self.text_module.load_model()
-
             self._initialized = True
-            logger.info("pipeline_initialized", mode=mode)
-
+            logger.info("pipeline_initialized")
         except Exception as e:
             logger.error("pipeline_initialization_failed", error=str(e))
             raise RealityCheckException(f"Failed to initialize pipeline: {e}")
@@ -87,104 +51,96 @@ class AnalysisPipeline:
         self,
         image_path: Optional[str] = None,
         text: Optional[str] = None,
-        profile_id: Optional[str] = None
+        profile_id: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """
-        Analyze complete profile with image, text, and metadata.
-
-        Args:
-            image_path: Path to profile image
-            text: Profile bio text
-            profile_id: Optional profile identifier
-
-        Returns:
-            Complete analysis results with trust score
-
-        Example:
-            >>> pipeline = AnalysisPipeline()
-            >>> result = pipeline.analyze_profile(
-            ...     image_path="profile.jpg",
-            ...     text="I'm passionate about innovation..."
-            ... )
-            >>> print(result["trust_score_result"]["trust_score"])
-        """
-        # Lazy initialization
         if not self._initialized:
             self.initialize()
 
         start_time = time.time()
+        logger.info(
+            "analyzing_profile",
+            profile_id=profile_id,
+            has_image=image_path is not None,
+            has_text=text is not None,
+        )
 
-        # Log analysis start with profile information
-        logger.info("analyzing_profile",
-                   profile_id=profile_id,
-                   has_image=image_path is not None,
-                   has_text=text is not None)
-
-        # Initialize result containers for each analysis modality
-        # These will be None if the modality fails or is not provided
         image_result = None
         text_result = None
 
-        # ========================================
-        # MODALITY 1: Image Analysis
-        # ========================================
-        # Process image through ensemble detector if provided
-        # Uses: EfficientNet-B7 (50%) + XceptionNet (40%) + CLIP (10%)
         if image_path:
             try:
-                logger.info("analyzing_image")
-                # Call image module with explain=True to generate detailed explanations
-                # Returns ModuleResult with score, confidence, prediction, and explanation
                 image_result = self.image_module(image_path, explain=True)
                 logger.info("image_analysis_complete", score=image_result.score)
             except Exception as e:
                 logger.error("image_analysis_failed", error=str(e))
-                # Continue with other modalities even if image analysis fails
-                # Final score will be computed from remaining successful analyses
 
-        # ========================================
-        # MODALITY 2: Text Analysis
-        # ========================================
-        # Process text through ensemble detector if provided
-        # Uses: OpenAI Detector (70%) + ChatGPT Detector (20%) + Rules (10%)
         if text:
             try:
-                logger.info("analyzing_text")
-                # Call text module with explain=True for AI indicator explanations
-                # Returns ModuleResult with score, confidence, prediction, and AI patterns
                 text_result = self.text_module(text, explain=True)
                 logger.info("text_analysis_complete", score=text_result.score)
             except Exception as e:
                 logger.error("text_analysis_failed", error=str(e))
-                # Continue with fusion even if text analysis fails
-                # Image analysis alone can still provide a trust score
 
-        # Metadata analysis is intentionally skipped — uploaded images have
-        # their EXIF stripped by browsers/social platforms, so the heuristic
-        # would always flag them as suspicious. Trust score is image + text.
-
-        # ========================================
-        # MULTIMODAL FUSION
-        # ========================================
-        # Ensure at least one modality succeeded
-        # If all modalities failed, we can't compute a trust score
-        if not any([image_result, text_result]):
+        if not (image_result or text_result):
             raise RealityCheckException("No successful analysis from any module")
 
-        # Compute weighted trust score by fusing image and text results
-        # Weights are automatically adjusted if a modality is missing
-        # Default weights: image=0.4, text=0.3, metadata=0.3 (redistributed without metadata)
         trust_result = self.trust_scorer.compute_trust_score(
-            image_result=image_result,        # May be None if image analysis failed
-            text_result=text_result,          # May be None if text analysis failed
+            image_result=image_result,
+            text_result=text_result,
+        )
+        processing_time = (time.time() - start_time) * 1000
+
+        return self._envelope(
+            profile_id=profile_id,
+            image_result=image_result,
+            text_result=text_result,
+            trust_result=trust_result,
+            processing_time=processing_time,
         )
 
-        processing_time = (time.time() - start_time) * 1000  # ms
+    def analyze_image_only(self, image_path: str) -> Dict[str, Any]:
+        if not self._initialized:
+            self.initialize()
 
-        logger.info("analysis_complete",
-                   trust_score=trust_result.trust_score,
-                   processing_time_ms=processing_time)
+        start_time = time.time()
+        result = self.image_module(image_path, explain=True)
+        trust_result = self.trust_scorer.compute_trust_score(image_result=result)
 
+        return self._envelope(
+            profile_id=None,
+            image_result=result,
+            text_result=None,
+            trust_result=trust_result,
+            processing_time=(time.time() - start_time) * 1000,
+        )
+
+    def analyze_text_only(self, text: str) -> Dict[str, Any]:
+        if not self._initialized:
+            self.initialize()
+
+        start_time = time.time()
+        result = self.text_module(text, explain=True)
+        trust_result = self.trust_scorer.compute_trust_score(text_result=result)
+
+        return self._envelope(
+            profile_id=None,
+            image_result=None,
+            text_result=result,
+            trust_result=trust_result,
+            processing_time=(time.time() - start_time) * 1000,
+        )
+
+    def get_status(self) -> Dict[str, Any]:
+        return {
+            "initialized": self._initialized,
+            "modules": {
+                "image": self.image_module.is_loaded() if self.image_module else False,
+                "text": self.text_module.is_loaded() if self.text_module else False,
+            },
+            "device": self.config.MODEL.device,
+        }
+
+    def _envelope(self, *, profile_id, image_result, text_result, trust_result, processing_time):
         return {
             "profile_id": profile_id or "unknown",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
@@ -192,59 +148,4 @@ class AnalysisPipeline:
             "text_analysis": text_result.to_dict() if text_result else None,
             "trust_score_result": trust_result.to_dict(),
             "processing_time_ms": processing_time,
-        }
-
-    def analyze_image_only(self, image_path: str) -> Dict[str, Any]:
-        """Analyze image only. Returns the same envelope as analyze_profile
-        with text_analysis = None and trust_score sourced from image."""
-        if not self._initialized:
-            self.initialize()
-
-        logger.info("analyzing_image_only", path=image_path)
-        start_time = time.time()
-        result = self.image_module(image_path, explain=True)
-        trust_result = self.trust_scorer.compute_trust_score(image_result=result)
-
-        return {
-            "profile_id": "unknown",
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "image_analysis": result.to_dict(),
-            "text_analysis": None,
-            "trust_score_result": trust_result.to_dict(),
-            "processing_time_ms": (time.time() - start_time) * 1000,
-        }
-
-    def analyze_text_only(self, text: str) -> Dict[str, Any]:
-        """Analyze text only. Same envelope shape as analyze_profile."""
-        if not self._initialized:
-            self.initialize()
-
-        logger.info("analyzing_text_only", length=len(text))
-        start_time = time.time()
-        result = self.text_module(text, explain=True)
-        trust_result = self.trust_scorer.compute_trust_score(text_result=result)
-
-        return {
-            "profile_id": "unknown",
-            "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "image_analysis": None,
-            "text_analysis": result.to_dict(),
-            "trust_score_result": trust_result.to_dict(),
-            "processing_time_ms": (time.time() - start_time) * 1000,
-        }
-
-    def get_status(self) -> Dict[str, Any]:
-        """
-        Get pipeline status.
-
-        Returns:
-            Status information
-        """
-        return {
-            "initialized": self._initialized,
-            "modules": {
-                "image": self.image_module.is_loaded() if self.image_module else False,
-                "text": self.text_module.is_loaded() if self.text_module else False,
-            },
-            "device": self.config.MODEL.device if self.config else "unknown",
         }

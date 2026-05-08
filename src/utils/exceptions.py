@@ -1,53 +1,21 @@
-"""
-Custom exceptions for RealityCheck AI system.
-"""
+"""Custom exceptions for RealityCheck AI."""
 
 
 class RealityCheckException(Exception):
-    """Base exception for all custom errors"""
-    pass
+    """Base exception for the application."""
 
 
 class ModelLoadError(RealityCheckException):
-    """Failed to load model weights"""
-    pass
+    """Raised when a model fails to load."""
 
 
 class ImageProcessingError(RealityCheckException):
-    """Error during image processing"""
-    pass
-
-
-class NoFaceDetectedError(ImageProcessingError):
-    """No face detected in image"""
-    pass
+    """Raised when image preprocessing fails."""
 
 
 class TextProcessingError(RealityCheckException):
-    """Error during text processing"""
-    pass
-
-
-class MetadataExtractionError(RealityCheckException):
-    """Error extracting metadata from image"""
-    pass
+    """Raised when text preprocessing fails."""
 
 
 class PredictionError(RealityCheckException):
-    """Error during model prediction"""
-    pass
-
-
-class ExplanationError(RealityCheckException):
-    """Error generating explanation"""
-    pass
-
-
-class ConfigurationError(RealityCheckException):
-    """Invalid configuration"""
-    pass
-
-
-class ValidationError(RealityCheckException):
-    """Input validation failed"""
-    pass
+    """Raised when a model prediction fails."""

@@ -12,12 +12,13 @@ Where:
 """
 
 from dataclasses import dataclass, field
-from typing import Dict, Any, Optional, List, Tuple
-import numpy as np
 from enum import Enum
+from typing import Any, Dict, List, Optional
 
-from src.modules.base import ModuleResult
+import numpy as np
+
 from config.base import FusionConfig
+from src.modules.base import ModuleResult
 
 
 class TrustLevel(str, Enum):
@@ -378,63 +379,3 @@ class TrustScorer:
 
         return factors
 
-    def ensemble_predictions(
-        self,
-        predictions: List[Tuple[float, float]]
-    ) -> Tuple[float, float]:
-        """
-        Ensemble multiple predictions with uncertainty weighting.
-
-        Args:
-            predictions: List of (score, confidence) tuples
-
-        Returns:
-            Tuple of (ensemble_score, ensemble_confidence)
-        """
-        if not predictions:
-            raise ValueError("No predictions to ensemble")
-
-        # Weight by confidence
-        scores = np.array([p[0] for p in predictions])
-        confidences = np.array([p[1] for p in predictions])
-
-        weighted_score = np.average(scores, weights=confidences)
-        ensemble_confidence = np.mean(confidences)
-
-        return float(weighted_score), float(ensemble_confidence)
-
-
-def fuse_multimodal_results(
-    image_result: Optional[ModuleResult] = None,
-    text_result: Optional[ModuleResult] = None,
-    metadata_result: Optional[ModuleResult] = None,
-    config: Optional[FusionConfig] = None
-) -> TrustScoreResult:
-    """
-    Convenience function for computing trust score.
-
-    Args:
-        image_result: Image module result
-        text_result: Text module result
-        metadata_result: Metadata module result
-        config: Fusion configuration
-
-    Returns:
-        TrustScoreResult
-
-    Example:
-        >>> from src.modules.fusion.trust_scorer import fuse_multimodal_results
-        >>> result = fuse_multimodal_results(
-        ...     image_result=img_result,
-        ...     text_result=txt_result,
-        ...     metadata_result=meta_result
-        ... )
-        >>> print(f"Trust Score: {result.trust_score:.2f}")
-        >>> print(f"Interpretation: {result.interpretation}")
-    """
-    scorer = TrustScorer(config=config)
-    return scorer.compute_trust_score(
-        image_result=image_result,
-        text_result=text_result,
-        metadata_result=metadata_result
-    )
