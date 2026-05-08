@@ -11,7 +11,6 @@ from src.modules.image.classifier import ImageAuthenticityModule
 from src.modules.text.classifier import TextAuthenticityModule
 from src.modules.image.ensemble_detector import EnsembleImageDetector
 from src.modules.text.ensemble_text_detector import EnsembleTextDetector
-from src.modules.metadata.analyzer import MetadataForensicsModule
 from src.modules.fusion.trust_scorer import TrustScorer, TrustScoreResult
 from src.utils.logging import get_logger
 from src.utils.exceptions import RealityCheckException
@@ -43,10 +42,10 @@ class AnalysisPipeline:
         # Check if cloud mode is enabled
         self.use_cloud = os.getenv("USE_CLOUD_APIS", "false").lower() == "true"
 
-        # Initialize modules
+        # Initialize modules. Metadata analysis is intentionally disabled
+        # (uploaded images have stripped EXIF) so we don't load that module.
         self.image_module = None
         self.text_module = None
-        self.metadata_module = None
         self.trust_scorer = None
 
         self._initialized = False
@@ -82,16 +81,12 @@ class AnalysisPipeline:
                 self.image_module = ImageAuthenticityModule(self.config.MODEL.__dict__)
                 self.text_module = TextAuthenticityModule(self.config.MODEL.__dict__)
 
-            # Metadata module is always local (EXIF extraction)
-            self.metadata_module = MetadataForensicsModule(self.config.METADATA.__dict__)
-
             # Initialize trust scorer
             self.trust_scorer = TrustScorer(self.config.FUSION)
 
             # Load models
             self.image_module.load_model()
             self.text_module.load_model()
-            self.metadata_module.load_model()
 
             self._initialized = True
             logger.info("pipeline_initialized", mode=mode)
@@ -141,7 +136,6 @@ class AnalysisPipeline:
         # These will be None if the modality fails or is not provided
         image_result = None
         text_result = None
-        metadata_result = None
 
         # ========================================
         # MODALITY 1: Image Analysis
@@ -177,17 +171,9 @@ class AnalysisPipeline:
                 # Continue with fusion even if text analysis fails
                 # Image analysis alone can still provide a trust score
 
-        # ========================================
-        # MODALITY 3: Metadata Analysis (SKIPPED)
-        # ========================================
-        # Metadata analysis is intentionally skipped because:
-        # 1. Uploaded images have stripped EXIF data (browsers remove it)
-        # 2. Social media platforms strip all metadata on upload
-        # 3. Metadata analysis would always return "suspicious" which is misleading
-        #
-        # Trust score is computed from: image + text analysis only
-        logger.info("metadata_analysis_skipped",
-                   reason="Metadata analysis not applicable for manual uploads")
+        # Metadata analysis is intentionally skipped — uploaded images have
+        # their EXIF stripped by browsers/social platforms, so the heuristic
+        # would always flag them as suspicious. Trust score is image + text.
 
         # ========================================
         # MULTIMODAL FUSION
@@ -203,7 +189,6 @@ class AnalysisPipeline:
         trust_result = self.trust_scorer.compute_trust_score(
             image_result=image_result,        # May be None if image analysis failed
             text_result=text_result,          # May be None if text analysis failed
-            metadata_result=None              # Always None (metadata skipped)
         )
 
         processing_time = (time.time() - start_time) * 1000  # ms
@@ -212,18 +197,14 @@ class AnalysisPipeline:
                    trust_score=trust_result.trust_score,
                    processing_time_ms=processing_time)
 
-        # Compile results
-        result = {
+        return {
             "profile_id": profile_id or "unknown",
             "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
             "image_analysis": image_result.to_dict() if image_result else None,
             "text_analysis": text_result.to_dict() if text_result else None,
-            "metadata_analysis": metadata_result.to_dict() if metadata_result else None,
             "trust_score_result": trust_result.to_dict(),
-            "processing_time_ms": processing_time
+            "processing_time_ms": processing_time,
         }
-
-        return result
 
     def analyze_image_only(self, image_path: str) -> Dict[str, Any]:
         """
@@ -281,7 +262,6 @@ class AnalysisPipeline:
             "modules": {
                 "image": self.image_module.is_loaded() if self.image_module else False,
                 "text": self.text_module.is_loaded() if self.text_module else False,
-                "metadata": self.metadata_module.is_loaded() if self.metadata_module else False
             },
-            "device": self.config.MODEL.device if self.config else "unknown"
+            "device": self.config.MODEL.device if self.config else "unknown",
         }

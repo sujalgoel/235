@@ -21,8 +21,5 @@ class DevelopmentConfig(Config):
         # Use smaller models for faster iteration (optional)
         # self.MODEL.text_model_name = "distilbert-base-uncased"  # Already default
 
-        # Disable rate limiting in development
-        self.API.rate_limit_enabled = False
-
 
 config = DevelopmentConfig()

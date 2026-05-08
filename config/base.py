@@ -112,16 +112,12 @@ class APIConfig:
     # Request limits
     max_upload_size: int = 10 * 1024 * 1024  # 10MB
     request_timeout: int = 300  # 5 minutes
-    max_requests_per_minute: int = 100
 
     # CORS — safe defaults; per-env configs (development/production) widen as needed
     cors_origins: list = field(default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"])
     cors_allow_credentials: bool = False
     cors_allow_methods: list = field(default_factory=lambda: ["GET", "POST", "OPTIONS"])
     cors_allow_headers: list = field(default_factory=lambda: ["Content-Type", "Authorization"])
-
-    # Rate limiting flag (note: middleware not yet wired up; flag reserved for future use)
-    rate_limit_enabled: bool = True
 
     # File storage
     upload_dir: str = str(PROJECT_ROOT / "uploads")
@@ -342,7 +338,6 @@ def get_config(env: str = "development") -> Config:
         cfg.API.reload = False  # No auto-reload in production
         cfg.API.workers = 8  # Multi-worker for high throughput
         cfg.LOGGING.log_level = "WARNING"  # Less verbose logging
-        cfg.API.rate_limit_enabled = True  # Prevent abuse
 
     elif env == "development":
         # ========================================
