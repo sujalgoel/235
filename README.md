@@ -307,22 +307,40 @@ Errors come back as `{ "error": "Type", "message": "...", "timestamp": "..." }`.
 
 ## 📊 Performance
 
-### Accuracy Metrics
-| Module | Model | Accuracy | F1-Score |
-|--------|-------|----------|----------|
-| Image | Ensemble | 98.2% | 0.981 |
-| Text | Ensemble | 95.7% | 0.953 |
-| Overall | Fusion | 96.8% | 0.965 |
+### Empirical evaluation (this pipeline, in-distribution)
 
-### Processing Speed
-- **Image Analysis**: ~2-3 seconds
-- **Text Analysis**: ~1-2 seconds
-- **Complete Pipeline**: ~3-5 seconds
+We benchmarked the deployed pipeline on labeled samples drawn from public datasets close to the deployment domain (real face photos vs StyleGAN-generated faces; labeled human-vs-LLM short text):
 
-### Model Sizes
-- **Total Download**: ~300 MB (first run only)
-- **Runtime Memory**: ~2-3 GB (CPU mode)
-- **GPU Acceleration**: Supported (CUDA)
+| Module | Test set | n | Accuracy | Notes |
+|---|---|---|---|---|
+| Image | CelebA real (50) + ThisPersonDoesNotExist AI (50) | 100 | **64.0%** | Recall on AI: 80%. Recall on real: 48%. Model is biased toward predicting "AI" — high sensitivity, low specificity. |
+| Text  | `andythetechnerd03/AI-human-text` (50 + 50, 100-1000 chars) | 100 | **51.0%** | Score distributions for AI and human overlap almost completely (means 0.286 vs 0.305). Effectively uncalibrated at the 0.5 threshold. |
+
+We additionally ran an out-of-distribution sweep (broad AI-art / Q&A dialogue) where image dropped to 49% and text dropped to 15% — both essentially random or below — confirming that detector accuracy is highly domain-dependent.
+
+### Upstream model claims (for reference)
+
+The constituent models report higher numbers on their own training distributions:
+
+| Component | Upstream claim | Source |
+|---|---|---|
+| EfficientNet-B7 | 97%+ | FaceForensics++ benchmark |
+| XceptionNet | 90-97% | FaceForensics++ benchmark |
+| ChatGPT-detector RoBERTa | 95%+ | Hello-SimpleAI training distribution |
+
+These are upstream paper figures, **not measured on this pipeline's input distribution**. They should be read as upper bounds, not promises.
+
+### Processing speed
+
+- Image-only inference: ~7-15 s (incl. Grad-CAM)
+- Text-only inference: ~6-10 s (incl. LIME)
+- Complete pipeline (image + text + fusion): ~12-20 s
+
+### Resource usage
+
+- **Total weight download:** ~300 MB on first run (EfficientNet-B7 + Xception + CLIP + ChatGPT-detector + OpenAI-detector)
+- **Runtime memory:** ~2-3 GB on CPU; less on GPU
+- **GPU acceleration:** Supported (CUDA), not required
 
 ---
 
