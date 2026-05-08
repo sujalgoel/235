@@ -18,7 +18,6 @@ class ProductionConfig(Config):
             raise ValueError("CORS_ORIGINS must be set in production (comma-separated allowed origins)")
         self.API.cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
-        self.API.api_key_enabled = True
         self.API.rate_limit_enabled = True
         self.API.max_requests_per_minute = 100
 

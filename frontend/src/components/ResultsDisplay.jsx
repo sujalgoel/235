@@ -32,6 +32,16 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
   // - < 0.5: Suspicious (orange)
   // - < 0.7: Moderate (yellow)
   // - >= 0.7: Likely Real (green)
+  // Static class map: Tailwind JIT only emits classes it can see verbatim,
+  // so dynamic strings like `text-${color}-600` get purged in production.
+  const STATUS_STYLES = {
+    gray:   { score: 'text-gray-600',   pill: 'bg-gray-100 text-gray-700' },
+    red:    { score: 'text-red-600',    pill: 'bg-red-100 text-red-700' },
+    orange: { score: 'text-orange-600', pill: 'bg-orange-100 text-orange-700' },
+    yellow: { score: 'text-yellow-600', pill: 'bg-yellow-100 text-yellow-700' },
+    green:  { score: 'text-green-600',  pill: 'bg-green-100 text-green-700' },
+  };
+
   const getModuleStatus = (score) => {
     if (score === null) return { text: 'Not Analyzed', color: 'gray' };
     if (score < 0.3) return { text: 'Likely Fake', color: 'red' };
@@ -54,6 +64,7 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
   // - icon: Emoji icon for visual identification
   const ModuleCard = ({ title, score, prediction, explanation, icon }) => {
     const status = getModuleStatus(score);
+    const styles = STATUS_STYLES[status.color] ?? STATUS_STYLES.gray;
 
     // Check if this is image analysis with Grad-CAM visualizations
     // Grad-CAM heatmaps show which parts of the image influenced the decision
@@ -67,7 +78,7 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
             <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           </div>
           {score !== null && (
-            <div className={`text-${status.color}-600 font-bold text-xl`}>
+            <div className={`${styles.score} font-bold text-xl`}>
               {Math.round(score * 100)}%
             </div>
           )}
@@ -75,7 +86,7 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
 
         {score !== null ? (
           <>
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mb-3 bg-${status.color}-100 text-${status.color}-700`}>
+            <div className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mb-3 ${styles.pill}`}>
               {status.text}
             </div>
 

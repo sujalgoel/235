@@ -2,6 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analyzeProfile } from '../services/api';
 
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MiB — matches backend cap
+const ACCEPTED_IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg'];
+const MIN_BIO_LENGTH = 10;
+const MAX_BIO_LENGTH = 1000;
+
 const ProfileAnalyzer = () => {
   // ========================================
   // NAVIGATION HOOK
@@ -36,16 +41,24 @@ const ProfileAnalyzer = () => {
   // FileReader is async, so we use onloadend callback
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setImage(file);
+    if (!file) return;
 
-      // FileReader converts file to base64 data URL for preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);  // Set preview after conversion completes
-      };
-      reader.readAsDataURL(file);  // Start async conversion
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setError('Image must be PNG, JPG, or JPEG.');
+      return;
     }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      setError(`Image exceeds the ${MAX_UPLOAD_BYTES / (1024 * 1024)}MB limit.`);
+      return;
+    }
+
+    setError(null);
+    setImage(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result);
+    reader.onerror = () => setError('Failed to read the selected image.');
+    reader.readAsDataURL(file);
   };
 
   // ========================================
@@ -58,32 +71,41 @@ const ProfileAnalyzer = () => {
   // 3. On success: Navigate to results page with data in route state
   // 4. On error: Display error message and stop loading spinner
   const handleAnalyze = async () => {
-    setLoading(true);
     setError(null);
 
+    // Front-load validation so users get immediate, specific feedback
+    // rather than a 422 from the backend.
+    if (!image) {
+      setError('Please upload a profile image.');
+      return;
+    }
+    const trimmedBio = bioText.trim();
+    if (trimmedBio.length < MIN_BIO_LENGTH) {
+      setError(`Bio must be at least ${MIN_BIO_LENGTH} characters.`);
+      return;
+    }
+    if (trimmedBio.length > MAX_BIO_LENGTH) {
+      setError(`Bio cannot exceed ${MAX_BIO_LENGTH} characters.`);
+      return;
+    }
+
+    setLoading(true);
     try {
-      // Validation: Both image and text are required for multimodal analysis
-      if (!image || !bioText.trim()) {
-        setError('Please provide both an image and bio text');
-        setLoading(false);
-        return;
-      }
-
-      // Call API: analyzeProfile() creates FormData and sends POST request
-      // Backend processes through ensemble models and returns trust score
       const response = await analyzeProfile(image, bioText);
-
-      // Navigate to results page, passing analysis data via React Router state
-      // This avoids storing results in global state or localStorage
       navigate('/profile', { state: { results: response } });
     } catch (err) {
-      // Error handling: Extract error message from API response or use fallback
+      // Backend returns ErrorResponse {error, message, ...} via the global
+      // exception handler, but FastAPI HTTPException raises {detail}. Check
+      // both keys so the user sees the real reason regardless of path.
+      const data = err.response?.data;
       setError(
-        err.response?.data?.detail ||
+        data?.message ||
+        data?.detail ||
         'Analysis failed. Please check if the API server is running and try again.'
       );
       console.error('Analysis error:', err);
-      setLoading(false);  // Re-enable analyze button
+    } finally {
+      setLoading(false);
     }
   };
 

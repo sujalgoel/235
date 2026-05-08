@@ -251,8 +251,9 @@ class EnsembleImageDetector(BaseModule):
                 predictions['clip']['prob_fake'] * self.weights['clip']
             )
 
-            # Normalize
-            total = ensemble_prob_real + ensemble_prob_fake
+            # Normalize. Floor the divisor so a degenerate ensemble can't
+            # divide by zero and emit NaN downstream.
+            total = max(ensemble_prob_real + ensemble_prob_fake, 1e-7)
             ensemble_prob_real /= total
             ensemble_prob_fake /= total
 

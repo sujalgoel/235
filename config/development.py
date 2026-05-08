@@ -23,7 +23,6 @@ class DevelopmentConfig(Config):
 
         # Disable rate limiting in development
         self.API.rate_limit_enabled = False
-        self.API.api_key_enabled = False
 
 
 config = DevelopmentConfig()

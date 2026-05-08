@@ -243,8 +243,10 @@ class EnsembleTextDetector(BaseModule):
                 rule_score['prob_ai'] * self.weights['rule_based']
             )
 
-            # Normalize
-            total = ensemble_prob_human + ensemble_prob_ai
+            # Normalize. Floor the divisor so that a degenerate ensemble
+            # (both totals collapsed to ~0 from a fallback model) doesn't
+            # divide by zero and emit NaN downstream.
+            total = max(ensemble_prob_human + ensemble_prob_ai, 1e-7)
             ensemble_prob_human /= total
             ensemble_prob_ai /= total
 

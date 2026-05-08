@@ -120,8 +120,7 @@ class APIConfig:
     cors_allow_methods: list = field(default_factory=lambda: ["GET", "POST", "OPTIONS"])
     cors_allow_headers: list = field(default_factory=lambda: ["Content-Type", "Authorization"])
 
-    # Security
-    api_key_enabled: bool = False
+    # Rate limiting flag (note: middleware not yet wired up; flag reserved for future use)
     rate_limit_enabled: bool = True
 
     # File storage
@@ -340,7 +339,6 @@ def get_config(env: str = "development") -> Config:
         cfg.API.reload = False  # No auto-reload in production
         cfg.API.workers = 8  # Multi-worker for high throughput
         cfg.LOGGING.log_level = "WARNING"  # Less verbose logging
-        cfg.API.api_key_enabled = True  # Require API keys for security
         cfg.API.rate_limit_enabled = True  # Prevent abuse
 
     elif env == "development":

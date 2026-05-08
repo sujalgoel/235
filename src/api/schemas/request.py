@@ -3,18 +3,18 @@ Pydantic request models for API validation.
 """
 
 from typing import Optional
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 
 
 class ProfileAnalysisRequest(BaseModel):
     """Request model for complete profile analysis"""
     bio_text: str = Field(..., min_length=10, max_length=1000, description="Profile bio text")
-    profile_id: Optional[str] = Field(None, description="Optional profile identifier")
+    profile_id: Optional[str] = Field(None, max_length=256, description="Optional profile identifier")
 
-    @validator('bio_text')
-    def validate_bio(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Bio text cannot be empty")
+    @field_validator('bio_text')
+    @classmethod
+    def strip_bio(cls, v: str) -> str:
+        # min_length already rejects empty/whitespace once stripped; this just normalizes.
         return v.strip()
 
 
@@ -22,8 +22,7 @@ class TextAnalysisRequest(BaseModel):
     """Request model for text-only analysis"""
     text: str = Field(..., min_length=10, max_length=1000, description="Text to analyze")
 
-    @validator('text')
-    def validate_text(cls, v):
-        if not v or not v.strip():
-            raise ValueError("Text cannot be empty")
+    @field_validator('text')
+    @classmethod
+    def strip_text(cls, v: str) -> str:
         return v.strip()

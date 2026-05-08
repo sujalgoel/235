@@ -19,13 +19,13 @@ const API_ROOT = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
 // ========================================
 // AXIOS INSTANCE
 // ========================================
-// Pre-configured axios instance with base URL and headers
-// Uses multipart/form-data for file upload support
+// Don't preset Content-Type: axios sets the correct multipart boundary
+// automatically when the request body is a FormData. The 60s timeout
+// matches the backend's request_timeout=300 with headroom for the
+// frontend to surface a friendly error before the server gives up.
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
+  timeout: 60_000,
 });
 
 /**

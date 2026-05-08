@@ -176,8 +176,8 @@ async def health_check():
 @app.post("/api/v1/analyze/profile", tags=["Analysis"])
 async def analyze_profile(
     image: UploadFile = File(..., description="Profile image"),
-    bio_text: str = Form(..., description="Profile bio text"),
-    profile_id: Optional[str] = Form(None, description="Optional profile ID")
+    bio_text: str = Form(..., min_length=10, max_length=1000, description="Profile bio text"),
+    profile_id: Optional[str] = Form(None, max_length=256, description="Optional profile ID")
 ):
     """
     Analyze image and text for AI-generated content.
@@ -297,7 +297,7 @@ async def analyze_image(image: UploadFile = File(..., description="Image to anal
 
 
 @app.post("/api/v1/analyze/text", response_model=TextAnalysisResponse, tags=["Analysis"])
-async def analyze_text(text: str = Form(..., description="Text to analyze")):
+async def analyze_text(text: str = Form(..., min_length=10, max_length=1000, description="Text to analyze")):
     """
     Analyze text only (no image analysis).
 
@@ -310,9 +310,17 @@ async def analyze_text(text: str = Form(..., description="Text to analyze")):
         logger.info("text_analysis_request", length=len(text))
 
         result = pipeline.analyze_text_only(text)
+        if "text_analysis" not in result:
+            logger.error("pipeline_missing_text_analysis", keys=list(result.keys()))
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Text analysis failed"
+            )
         serializable_result = make_json_serializable(result["text_analysis"])
         return JSONResponse(content=serializable_result)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("text_analysis_failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(

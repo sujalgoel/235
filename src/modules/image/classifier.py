@@ -215,7 +215,14 @@ class ImageAuthenticityModule(BaseModule):
                 prediction=prediction,
                 explanation={},  # Will be filled by explain()
                 metadata=metadata,
-                raw_output={"logits": logits, "probs": probs, "face_crop": face_crop}
+                # face_crop stays as a numpy array (explain() needs it); the
+                # logits/probs are flattened to plain lists so raw_output
+                # serializes cleanly.
+                raw_output={
+                    "logits": logits.detach().cpu().tolist(),
+                    "probs": probs.detach().cpu().tolist(),
+                    "face_crop": face_crop,
+                }
             )
 
         except Exception as e:
@@ -273,8 +280,10 @@ class ImageAuthenticityModule(BaseModule):
             pil_image = Image.fromarray(face_crop)
             tensor = self.transform(pil_image).unsqueeze(0).to(self._device)
 
-            # Target class for Grad-CAM (fake class = 1)
-            target_class = torch.argmax(probs[0]).item()
+            # Target class for Grad-CAM (fake class = 1).
+            # probs is a nested list [[p_real, p_fake]] after the predict()
+            # rewrite, so use plain Python argmax instead of torch.argmax.
+            target_class = max(range(len(probs[0])), key=lambda i: probs[0][i])
 
             # Generate Grad-CAM
             heatmap = self.explainer.generate_heatmap(

@@ -195,7 +195,15 @@ class TextAuthenticityModule(BaseModule):
                 prediction=prediction,
                 explanation={},  # Will be filled by explain()
                 metadata=metadata,
-                raw_output={"logits": logits, "probs": probs, "text": text, "inputs": inputs}
+                # Convert tensors to plain Python types so raw_output stays
+                # JSON-serializable; downstream code that needs the originals
+                # can re-run the model from text + inputs.
+                raw_output={
+                    "logits": logits.detach().cpu().tolist(),
+                    "probs": probs.detach().cpu().tolist(),
+                    "text": text,
+                    "input_ids": inputs.get("input_ids").detach().cpu().tolist() if inputs.get("input_ids") is not None else None,
+                }
             )
 
         except Exception as e:
