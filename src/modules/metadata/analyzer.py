@@ -228,22 +228,17 @@ class MetadataForensicsModule(BaseModule):
         score = 1.0
 
         # Check if dates are in the past (not future)
-        for field in ["DateTimeOriginal", "CreateDate"]:
-            if field in temporal:
-                try:
-                    # Parse datetime
-                    date_str = str(temporal[field])
-                    # Try common formats
-                    for fmt in ["%Y:%m:%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]:
-                        try:
-                            dt = datetime.strptime(date_str.split('+')[0].strip(), fmt)
-                            if dt > datetime.now():
-                                score *= 0.5  # Future date is suspicious
-                            break
-                        except:
-                            continue
-                except:
-                    pass
+        for field_name in ["DateTimeOriginal", "CreateDate"]:
+            if field_name in temporal:
+                date_str = str(temporal[field_name])
+                for fmt in ["%Y:%m:%d %H:%M:%S", "%Y-%m-%d %H:%M:%S"]:
+                    try:
+                        dt = datetime.strptime(date_str.split('+')[0].strip(), fmt)
+                        if dt > datetime.now():
+                            score *= 0.5  # Future date is suspicious
+                        break
+                    except (ValueError, AttributeError, IndexError):
+                        continue
 
         return score
 
@@ -257,7 +252,7 @@ class MetadataForensicsModule(BaseModule):
                 iso = int(settings["ISO"])
                 if iso < 50 or iso > 102400:
                     score *= 0.7  # Unusual ISO
-            except:
+            except (ValueError, TypeError):
                 pass
 
         # Check aperture
@@ -266,7 +261,7 @@ class MetadataForensicsModule(BaseModule):
                 fnum = float(settings["FNumber"])
                 if fnum < 0.5 or fnum > 64:
                     score *= 0.7  # Unusual aperture
-            except:
+            except (ValueError, TypeError):
                 pass
 
         return score
@@ -281,7 +276,7 @@ class MetadataForensicsModule(BaseModule):
                 lat = float(str(geo["GPSLatitude"]).split()[0])
                 if lat < -90 or lat > 90:
                     score = 0.0
-            except:
+            except (ValueError, IndexError, TypeError):
                 pass
 
         # Check longitude range [-180, 180]
@@ -290,7 +285,7 @@ class MetadataForensicsModule(BaseModule):
                 lon = float(str(geo["GPSLongitude"]).split()[0])
                 if lon < -180 or lon > 180:
                     score = 0.0
-            except:
+            except (ValueError, IndexError, TypeError):
                 pass
 
         return score

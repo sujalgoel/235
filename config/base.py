@@ -275,7 +275,10 @@ class Config:
             # API Configuration Overrides
             # ========================================
             self.API.host = os.getenv("API_HOST", self.API.host)
-            self.API.port = int(os.getenv("API_PORT", self.API.port))  # Parse as int
+            port_value = int(os.getenv("API_PORT", self.API.port))
+            if not 1 <= port_value <= 65535:
+                raise ValueError(f"API_PORT must be in [1, 65535], got {port_value}")
+            self.API.port = port_value
 
             # ========================================
             # Logging Configuration Overrides

@@ -90,7 +90,9 @@ class MetadataExtractor:
 
         try:
             with Image.open(image_path) as img:
-                exif_data = img._getexif()
+                # Use the public Image.getexif() API (Pillow 6.0+); the
+                # private _getexif() is deprecated and removed in newer Pillow.
+                exif_data = img.getexif()
 
                 if exif_data:
                     for tag_id, value in exif_data.items():

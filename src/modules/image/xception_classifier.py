@@ -237,7 +237,7 @@ class XceptionNetDetector(BaseModule):
             gradient_magnitude = np.sqrt(grad_x**2 + grad_y**2)
 
             return float(np.std(gradient_magnitude))
-        except:
+        except (ValueError, IndexError, TypeError, RuntimeError):
             return 0.0
 
     def _generate_explanation(self, prob_real: float, prob_fake: float, features: Dict) -> Dict[str, Any]:

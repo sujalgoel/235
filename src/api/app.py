@@ -11,6 +11,7 @@ from pathlib import Path
 import tempfile
 import os
 import numpy as np
+import torch
 
 from src.core.pipeline import AnalysisPipeline
 from src.api.schemas.request import TextAnalysisRequest
@@ -60,13 +61,16 @@ configure_logging(
 
 logger = get_logger(__name__)
 
-# Create FastAPI app
+# Create FastAPI app. Hide interactive docs in production so the public
+# API surface (and our schemas) aren't broadcast.
+_docs_enabled = ENV != "production"
 app = FastAPI(
     title="RealityCheck AI API",
     version="1.0.0",
     description="Multimodal fake profile detection with explainable AI",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url="/docs" if _docs_enabled else None,
+    redoc_url="/redoc" if _docs_enabled else None,
+    openapi_url="/openapi.json" if _docs_enabled else None,
 )
 
 # CORS middleware
@@ -118,9 +122,10 @@ def make_json_serializable(obj: Any) -> Any:
     # Convert NumPy scalars to Python primitives
     elif isinstance(obj, (np.integer, np.floating)):
         return obj.item()
-    # Convert PyTorch tensors to Python lists
-    # Must move to CPU first if on GPU, then detach from computation graph
-    elif hasattr(obj, 'detach'):  # torch tensor
+    # Convert PyTorch tensors to Python lists. Use torch.is_tensor instead
+    # of duck-typing on `.detach`, since plenty of unrelated objects (e.g.
+    # transformers BatchEncoding) have a detach attribute.
+    elif torch.is_tensor(obj):
         return obj.detach().cpu().numpy().tolist()
     # Native Python types are already serializable
     elif isinstance(obj, (int, float, str, bool, type(None))):

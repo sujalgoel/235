@@ -1,5 +1,6 @@
 import React from 'react';
 import TrustScoreGauge from './TrustScoreGauge';
+import { bandForScore } from '../utils/trustScore';
 
 const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
   // ========================================
@@ -42,13 +43,21 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
     green:  { score: 'text-green-600',  pill: 'bg-green-100 text-green-700' },
   };
 
+  // Drive thresholds and labels from the shared trust-score utility so the
+  // gauge and the module cards stay in lockstep with the backend bands.
   const getModuleStatus = (score) => {
-    if (score === null) return { text: 'Not Analyzed', color: 'gray' };
-    if (score < 0.3) return { text: 'Likely Fake', color: 'red' };
-    if (score < 0.5) return { text: 'Suspicious', color: 'orange' };
-    if (score < 0.7) return { text: 'Moderate', color: 'yellow' };
-    return { text: 'Likely Real', color: 'green' };
+    const band = bandForScore(score);
+    return { text: band.short, color: band.color };
   };
+
+  // Internal/noisy keys we don't want to render verbatim in the UI.
+  const HIDDEN_EXPLANATION_KEYS = new Set([
+    'grad_cam_heatmap',
+    'grad_cam_overlay',
+    'all_tokens',
+    'all_importance',
+    'token_importance',
+  ]);
 
   // ========================================
   // COMPONENT: ModuleCard
@@ -106,8 +115,9 @@ const ResultsDisplay = ({ results, onAnalyzeAnother }) => {
                 </h4>
                 <div className="text-sm text-gray-600 space-y-1">
                   {Object.entries(explanation).map(([key, value]) => {
-                    // Skip image fields - they'll be shown separately
-                    if (key === 'grad_cam_heatmap' || key === 'grad_cam_overlay') {
+                    // Skip fields rendered elsewhere (heatmap, token list) so
+                    // we don't dump base64 blobs or duplicate the highlighted view.
+                    if (HIDDEN_EXPLANATION_KEYS.has(key)) {
                       return null;
                     }
 

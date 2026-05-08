@@ -12,28 +12,27 @@ function App() {
   // This determines the color and message of the status banner at the top
   const [apiStatus, setApiStatus] = useState('checking');
 
-  // ========================================
-  // LIFECYCLE: Check API on component mount
-  // ========================================
-  // useEffect with empty dependency array [] runs once when component first renders
-  // This immediately checks if the FastAPI backend is reachable
+  // Poll the backend on mount and every 30s so the banner reflects the
+  // backend coming back up after a restart instead of staying red forever.
   useEffect(() => {
-    checkApiStatus();
-  }, []);
+    let cancelled = false;
 
-  // ========================================
-  // API HEALTH CHECK
-  // ========================================
-  // Calls the /health endpoint to verify backend is running
-  // Updates apiStatus state to show connection banner
-  const checkApiStatus = async () => {
-    try {
-      await healthCheck();
-      setApiStatus('connected');
-    } catch (error) {
-      setApiStatus('disconnected');
-    }
-  };
+    const ping = async () => {
+      try {
+        await healthCheck();
+        if (!cancelled) setApiStatus('connected');
+      } catch (error) {
+        if (!cancelled) setApiStatus('disconnected');
+      }
+    };
+
+    ping();
+    const interval = setInterval(ping, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
     <Router>

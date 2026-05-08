@@ -5,6 +5,7 @@ Uses Hive AI's Deepfake Detection API for state-of-the-art accuracy.
 """
 
 from typing import Dict, Any, Tuple, Optional
+import json
 import numpy as np
 import requests
 import os
@@ -81,12 +82,14 @@ class HiveAIImageDetector(BaseModule):
                 # Load to get metadata
                 image = Image.open(image_path)
             elif isinstance(input_data, np.ndarray):
-                # Save numpy array to temporary file
+                # Save numpy array to temporary file. Use a context manager so
+                # the file descriptor is released before PIL opens the path —
+                # otherwise we leak fds across many requests.
                 import tempfile
                 image = Image.fromarray(input_data)
-                temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.png')
-                image.save(temp_file.name)
-                image_path = temp_file.name
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as temp_file:
+                    image_path = temp_file.name
+                image.save(image_path)
             else:
                 raise ValueError(f"Unsupported input type: {type(input_data)}")
 
@@ -153,7 +156,10 @@ class HiveAIImageDetector(BaseModule):
                     "Check your API key and quota at https://thehive.ai"
                 )
 
-            result = response.json()
+            try:
+                result = response.json()
+            except json.JSONDecodeError as e:
+                raise PredictionError(f"Malformed Hive response: {e}")
             logger.info("hive_api_response_received", response_keys=list(result.keys()))
 
             # Parse Hive AI response

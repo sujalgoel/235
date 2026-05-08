@@ -132,30 +132,36 @@ class HuggingFaceImageDetector(BaseModule):
             if self.hf_token:
                 headers["Authorization"] = f"Bearer {self.hf_token}"
 
-            # Call Hugging Face Inference API
-            response = requests.post(
-                self.api_url,
-                headers=headers,
-                data=image_bytes,
-                timeout=30
-            )
+            # Call Hugging Face Inference API. 503 means the model is cold-loading;
+            # retry up to 3 times with exponential backoff and then give up so a
+            # broken endpoint can't trap us in an unbounded retry.
+            response = None
+            backoff = 5
+            for attempt in range(3):
+                response = requests.post(
+                    self.api_url,
+                    headers=headers,
+                    data=image_bytes,
+                    timeout=30,
+                )
+                self.last_request_time = time.time()
+                if response.status_code != 503:
+                    break
+                logger.warning("huggingface_model_loading", attempt=attempt + 1, retry_in_s=backoff)
+                time.sleep(backoff)
+                backoff *= 2
 
-            self.last_request_time = time.time()
-
-            # Handle API response
-            if response.status_code == 503:
-                # Model is loading, retry after delay
-                logger.warning("huggingface_model_loading", note="Retrying in 20 seconds...")
-                time.sleep(20)
-                response = requests.post(self.api_url, headers=headers, data=image_bytes, timeout=30)
-
-            if response.status_code != 200:
+            if response is None or response.status_code != 200:
+                code = response.status_code if response is not None else "no_response"
+                body = response.text[:500] if response is not None else ""
                 raise PredictionError(
-                    f"Hugging Face API error {response.status_code}: {response.text}\n"
-                    f"Model: {self.model_id}"
+                    f"Hugging Face API error {code} (model: {self.model_id}): {body}"
                 )
 
-            result = response.json()
+            try:
+                result = response.json()
+            except ValueError as e:
+                raise PredictionError(f"Malformed Hugging Face response: {e}")
             logger.info("huggingface_api_response_received", status="success")
 
             # Parse response

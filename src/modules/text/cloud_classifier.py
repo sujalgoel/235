@@ -5,6 +5,7 @@ Uses GPTZero's AI Detection API for state-of-the-art accuracy.
 """
 
 from typing import Dict, Any, Tuple, Optional
+import json
 import requests
 import os
 import re
@@ -152,10 +153,13 @@ class GPTZeroTextDetector(BaseModule):
                 )
             elif response.status_code != 200:
                 raise PredictionError(
-                    f"GPTZero API error {response.status_code}: {response.text}"
+                    f"GPTZero API error {response.status_code}: {response.text[:500]}"
                 )
 
-            result = response.json()
+            try:
+                result = response.json()
+            except json.JSONDecodeError as e:
+                raise PredictionError(f"Malformed GPTZero response: {e}")
             logger.info("gptzero_api_response_received")
 
             # Parse GPTZero response

@@ -32,12 +32,23 @@ class FaceDataset(Dataset):
     """Dataset for real/fake face images"""
 
     def __init__(self, data_dir: Path, split: str = "train", transform=None):
-        self.data_dir = data_dir / split
+        self.data_dir = Path(data_dir) / split
         self.transform = transform
 
-        # Load image paths
+        if not self.data_dir.exists():
+            raise FileNotFoundError(
+                f"Dataset split directory missing: {self.data_dir}. "
+                "Expected sub-directories `real/` and `fake/` with .jpg files."
+            )
+
         self.real_images = list((self.data_dir / "real").glob("*.jpg"))
         self.fake_images = list((self.data_dir / "fake").glob("*.jpg"))
+
+        if not self.real_images and not self.fake_images:
+            raise RuntimeError(
+                f"No .jpg files found under {self.data_dir}/real or "
+                f"{self.data_dir}/fake; refusing to train on an empty dataset."
+            )
 
         self.images = self.real_images + self.fake_images
         self.labels = [0] * len(self.real_images) + [1] * len(self.fake_images)
