@@ -75,6 +75,11 @@ frontend/dist/
 frontend/.env.local
 frontend/package-lock.json
 
+# Environment
+.env
+.env.local
+.env.*.local
+
 # Docker
 *.dockerignore
 
