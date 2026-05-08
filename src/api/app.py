@@ -25,6 +25,28 @@ from src.utils.logging import configure_logging, get_logger
 from src.utils.exceptions import RealityCheckException
 from config.base import get_config
 
+
+async def _read_upload_with_limit(upload: UploadFile, max_bytes: int) -> bytes:
+    """Read an UploadFile in chunks, rejecting early if it exceeds max_bytes.
+
+    Reading the whole file before checking size lets a client OOM the worker
+    by sending a multi-GB body. Streaming and checking the running total
+    bounds memory at max_bytes + chunk_size.
+    """
+    chunk_size = 1024 * 1024  # 1 MiB
+    buffer = bytearray()
+    while True:
+        chunk = await upload.read(chunk_size)
+        if not chunk:
+            break
+        buffer.extend(chunk)
+        if len(buffer) > max_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=f"File too large (max: {max_bytes // (1024 * 1024)}MB)"
+            )
+    return bytes(buffer)
+
 # Configuration
 ENV = os.getenv("ENVIRONMENT", "development")
 config = get_config(ENV)
@@ -171,19 +193,10 @@ async def analyze_profile(
                    profile_id=profile_id,
                    filename=image.filename)
 
-        # Step 1: Validate file size to prevent memory issues
-        # Read the entire uploaded file into memory
-        content = await image.read()
-        if len(content) > config.API.max_upload_size:
-            # Reject files larger than 10MB to prevent DoS attacks
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File too large (max: {config.API.max_upload_size / 1024 / 1024}MB)"
-            )
+        # Step 1: Stream upload and reject early if it exceeds the size cap
+        content = await _read_upload_with_limit(image, config.API.max_upload_size)
 
         # Step 2: Save uploaded image to temporary file
-        # We need a file path (not bytes) for the AI models to process
-        # Use NamedTemporaryFile with delete=False so we control cleanup
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(image.filename).suffix) as tmp_file:
             tmp_file.write(content)
             tmp_path = tmp_file.name
@@ -219,21 +232,24 @@ async def analyze_profile(
             return JSONResponse(content=serializable_result)
 
         finally:
-            # Step 6: Always cleanup temporary file to prevent disk space leaks
-            # Use try/except to prevent cleanup errors from crashing the response
+            # Always clean up temporary file. OSError covers both permission
+            # issues and FileNotFoundError; we log and move on so cleanup
+            # failures never propagate to the client.
             try:
                 os.unlink(tmp_path)
-            except:
-                pass  # Ignore cleanup errors - file will be cleaned by OS eventually
+            except OSError as cleanup_err:
+                logger.warning("temp_file_cleanup_failed", path=tmp_path, error=str(cleanup_err))
 
+    except HTTPException:
+        raise  # Preserve HTTP errors (e.g. 413) we raised intentionally
     except RealityCheckException as e:
-        logger.error("analysis_failed", error=str(e))
+        logger.error("analysis_failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="Analysis failed"
         )
     except Exception as e:
-        logger.error("unexpected_error", error=str(e))
+        logger.error("unexpected_error", error=str(e), error_type=type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Internal server error"
@@ -254,12 +270,7 @@ async def analyze_image(image: UploadFile = File(..., description="Image to anal
         logger.info("image_analysis_request", filename=image.filename)
 
         # Validate and save image
-        content = await image.read()
-        if len(content) > config.API.max_upload_size:
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=f"File too large"
-            )
+        content = await _read_upload_with_limit(image, config.API.max_upload_size)
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=Path(image.filename).suffix) as tmp_file:
             tmp_file.write(content)
@@ -272,14 +283,16 @@ async def analyze_image(image: UploadFile = File(..., description="Image to anal
         finally:
             try:
                 os.unlink(tmp_path)
-            except:
-                pass
+            except OSError as cleanup_err:
+                logger.warning("temp_file_cleanup_failed", path=tmp_path, error=str(cleanup_err))
 
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error("image_analysis_failed", error=str(e))
+        logger.error("image_analysis_failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="Image analysis failed"
         )
 
 
@@ -301,10 +314,10 @@ async def analyze_text(text: str = Form(..., description="Text to analyze")):
         return JSONResponse(content=serializable_result)
 
     except Exception as e:
-        logger.error("text_analysis_failed", error=str(e))
+        logger.error("text_analysis_failed", error=str(e), error_type=type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail="Text analysis failed"
         )
 
 

@@ -95,7 +95,9 @@ class ImageAuthenticityModule(BaseModule):
             model_path = self.config.get("image_model_path")
             if model_path and Path(model_path).exists():
                 logger.info("loading_pretrained_weights", path=model_path)
-                checkpoint = torch.load(model_path, map_location=self._device)
+                # weights_only=True restricts unpickling to plain tensors, blocking
+                # arbitrary code execution from a malicious checkpoint.
+                checkpoint = torch.load(model_path, map_location=self._device, weights_only=True)
 
                 # Handle different checkpoint formats
                 if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:

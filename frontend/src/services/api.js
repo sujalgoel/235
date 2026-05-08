@@ -11,9 +11,10 @@ import axios from 'axios';
 // ========================================
 // CONFIGURATION
 // ========================================
-// Base URL for all API endpoints
-// Backend must be running on localhost:8000 for this to work
-const API_BASE_URL = 'http://localhost:8000/api/v1';
+// Base URL is driven by Vite env vars so the same build works in dev and prod.
+// VITE_API_BASE_URL takes precedence; falls back to localhost for local dev.
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_ROOT = API_BASE_URL.replace(/\/api\/v\d+\/?$/, '');
 
 // ========================================
 // AXIOS INSTANCE
@@ -137,8 +138,7 @@ export const analyzeImage = async (image) => {
  */
 export const healthCheck = async () => {
   try {
-    // Direct axios call (not using api instance) to hit /health endpoint
-    const response = await axios.get('http://localhost:8000/health');
+    const response = await axios.get(`${API_ROOT}/health`);
     return response.data;
   } catch (error) {
     console.error('Health check failed:', error);

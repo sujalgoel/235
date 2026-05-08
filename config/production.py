@@ -13,7 +13,10 @@ class ProductionConfig(Config):
         # API settings for production
         self.API.reload = False
         self.API.workers = 8  # Multiple workers for better throughput
-        self.API.cors_origins = os.getenv("CORS_ORIGINS", "*").split(",")
+        cors_env = os.getenv("CORS_ORIGINS")
+        if not cors_env:
+            raise ValueError("CORS_ORIGINS must be set in production (comma-separated allowed origins)")
+        self.API.cors_origins = [o.strip() for o in cors_env.split(",") if o.strip()]
 
         self.API.api_key_enabled = True
         self.API.rate_limit_enabled = True

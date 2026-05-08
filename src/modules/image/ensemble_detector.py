@@ -391,8 +391,12 @@ class EnsembleImageDetector(BaseModule):
         # Generate Grad-CAM heatmap and overlay
         if self.grad_cam is not None and efficientnet_tensor is not None:
             try:
-                # Generate heatmap from EfficientNet-B7
-                heatmap = self.grad_cam.generate_heatmap(efficientnet_tensor.clone().requires_grad_(True))
+                # Detach from any prior graph before re-enabling grads, so Grad-CAM
+                # builds an isolated graph and doesn't accumulate gradients into
+                # the cached inference tensors.
+                heatmap = self.grad_cam.generate_heatmap(
+                    efficientnet_tensor.detach().clone().requires_grad_(True)
+                )
 
                 # Convert heatmap to colored image
                 heatmap_uint8 = np.uint8(255 * heatmap)

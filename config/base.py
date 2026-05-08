@@ -114,11 +114,11 @@ class APIConfig:
     request_timeout: int = 300  # 5 minutes
     max_requests_per_minute: int = 100
 
-    # CORS
-    cors_origins: list = field(default_factory=lambda: ["*"])
-    cors_allow_credentials: bool = True
-    cors_allow_methods: list = field(default_factory=lambda: ["*"])
-    cors_allow_headers: list = field(default_factory=lambda: ["*"])
+    # CORS — safe defaults; per-env configs (development/production) widen as needed
+    cors_origins: list = field(default_factory=lambda: ["http://localhost:3000", "http://localhost:5173"])
+    cors_allow_credentials: bool = False
+    cors_allow_methods: list = field(default_factory=lambda: ["GET", "POST", "OPTIONS"])
+    cors_allow_headers: list = field(default_factory=lambda: ["Content-Type", "Authorization"])
 
     # Security
     api_key_enabled: bool = False

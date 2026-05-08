@@ -45,11 +45,10 @@ class HiveAIImageDetector(BaseModule):
                 "Get your API key at: https://thehive.ai/pricing"
             )
 
-        # Hive API uses Token authentication
-        # If API key contains colon (username:password format), try using the full key first
-        # Some API providers use only the first part as the token
+        # Hive API uses Token authentication.
+        # Never log key length or shape — those leak useful info to anyone with log access.
         self.auth_type = 'token'
-        logger.info("hive_api_key_format", has_colon=':' in self.api_key, length=len(self.api_key))
+        logger.info("hive_api_initialized")
 
     def load_model(self) -> None:
         """Validate API connection"""
@@ -145,12 +144,12 @@ class HiveAIImageDetector(BaseModule):
             logger.info("hive_api_response", status_code=response.status_code)
 
             if response.status_code != 200:
+                # Don't log response.headers — they may echo back Authorization or set-cookie.
                 logger.error("hive_api_error",
                            status=response.status_code,
-                           response_text=response.text,
-                           headers=response.headers)
+                           response_text=response.text[:500])
                 raise PredictionError(
-                    f"Hive API error {response.status_code}: {response.text}\n"
+                    f"Hive API error {response.status_code}. "
                     "Check your API key and quota at https://thehive.ai"
                 )
 
