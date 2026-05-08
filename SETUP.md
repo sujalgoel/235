@@ -189,14 +189,13 @@ The `.env` file is already configured. Verify it exists:
 cat .env
 ```
 
-You should see 12 configuration variables:
+You should see configuration variables:
 - **ENVIRONMENT** - development/production/testing
 - **IMAGE_MODEL_PATH, TEXT_MODEL_PATH** - AI model paths
 - **DEVICE** - cpu/cuda (GPU support)
 - **API_HOST, API_PORT** - Server settings
 - **IMAGE_WEIGHT, TEXT_WEIGHT, METADATA_WEIGHT** - Fusion weights (0.4, 0.3, 0.3)
 - **LOG_LEVEL** - Logging verbosity
-- **SECRET_KEY** - Security key
 - **USE_CLOUD_APIS** - Ensemble mode toggle
 
 **No changes needed** unless you want to customize settings.
@@ -635,12 +634,6 @@ const API_BASE_URL = 'http://localhost:8000/api/v1';
 - **Local Processing:** All data processed locally, not sent to cloud
 - **Temporary Files:** Uploads auto-deleted after processing
 - **No Tracking:** No analytics or data collection
-- **Change SECRET_KEY** in production:
-  ```bash
-  # Generate new key
-  python -c "import secrets; print(secrets.token_hex(32))"
-  # Copy to .env
-  ```
 
 ---
 

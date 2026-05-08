@@ -121,7 +121,6 @@ class APIConfig:
     cors_allow_headers: list = field(default_factory=lambda: ["*"])
 
     # Security
-    secret_key: str = "change-this-in-production-use-env-var"
     api_key_enabled: bool = False
     rate_limit_enabled: bool = True
 
@@ -252,7 +251,6 @@ class Config:
         - IMAGE_MODEL_PATH, TEXT_MODEL_PATH: Model file paths
         - IMAGE_WEIGHT, TEXT_WEIGHT, METADATA_WEIGHT: Fusion weights
         - API_HOST, API_PORT: Server settings
-        - SECRET_KEY: API security key
         - LOG_LEVEL: Logging verbosity
         """
         try:
@@ -279,7 +277,6 @@ class Config:
             # ========================================
             self.API.host = os.getenv("API_HOST", self.API.host)
             self.API.port = int(os.getenv("API_PORT", self.API.port))  # Parse as int
-            self.API.secret_key = os.getenv("SECRET_KEY", self.API.secret_key)
 
             # ========================================
             # Logging Configuration Overrides
