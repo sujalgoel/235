@@ -15,6 +15,7 @@ An advanced AI-powered system for detecting fake profiles using multimodal analy
 - [Technology Stack](#technology-stack)
 - [Project Structure](#project-structure)
 - [Key Innovations](#key-innovations)
+- [API](#api)
 - [Performance](#performance)
 - [Team](#team)
 - [Documentation](#documentation)
@@ -254,6 +255,56 @@ Low-confidence predictions are pulled toward uncertainty (0.5) to avoid false co
 
 ---
 
+## 🔌 API
+
+The FastAPI backend exposes three analysis endpoints. All three return the same envelope shape — `image_analysis` and/or `text_analysis` are `null` when that modality wasn't requested.
+
+### Endpoints
+
+| Method | Path | Body | Notes |
+|--------|------|------|-------|
+| `GET`  | `/health` | — | Service status + per-module readiness |
+| `POST` | `/api/v1/analyze/profile` | `image` (file), `bio_text` (10-1000 chars), `profile_id` (optional) | Multimodal: image + text |
+| `POST` | `/api/v1/analyze/image` | `image` (file) | Image-only |
+| `POST` | `/api/v1/analyze/text` | `text` (10-1000 chars) | Text-only |
+
+Files are capped at 10 MiB. Validation happens at the FastAPI layer; oversize uploads are rejected with `413` before the body is buffered.
+
+### Example
+
+```bash
+curl -F "image=@profile.jpg" \
+     -F "bio_text=Passionate marketer with 10 years of innovative experience" \
+     http://localhost:8000/api/v1/analyze/profile
+```
+
+### Response shape
+
+```jsonc
+{
+  "profile_id": "unknown",
+  "timestamp": "2026-05-08T14:50:00Z",
+  "image_analysis": { "score": 0.18, "confidence": 0.92, "prediction": "fake", "explanation": { /* Grad-CAM, indicators */ } },
+  "text_analysis":  { "score": 0.41, "confidence": 0.74, "prediction": "ai",   "explanation": { /* LIME tokens */ } },
+  "final_trust_score": 0.27,
+  "interpretation": "Low trust — likely AI-generated content detected. Modules generally agree.",
+  "trust_level": "low",
+  "trust_score_details": {
+    "module_scores": { "image": 0.18, "text": 0.41 },
+    "contributing_factors": { "image": [...], "text": [...] }
+  },
+  "processing_time_ms": 4172.5
+}
+```
+
+Interactive docs are served at `/docs` (Swagger) and `/redoc` in non-production environments. Both are disabled when `ENVIRONMENT=production`.
+
+### Error shape
+
+Errors come back as `{ "error": "Type", "message": "...", "timestamp": "..." }`. Internal exception messages are scrubbed before reaching the client; check server logs for the full stack.
+
+---
+
 ## 📊 Performance
 
 ### Accuracy Metrics
@@ -287,6 +338,22 @@ Amity School of Engineering & Technology
 
 **Project Guide**
 - **Dr. Akanshi Gupta** - Faculty Mentor
+
+---
+
+## 🐳 Quickstart with Docker
+
+```bash
+# Build + run the backend (downloads ~300MB of model weights on first run)
+docker compose up --build
+
+# Backend is now on http://localhost:8000  →  /health, /docs, /api/v1/...
+
+# Frontend (separate terminal)
+cd frontend && npm install && npm run dev
+```
+
+Set `VITE_API_BASE_URL` if pointing the frontend at a non-local backend.
 
 ---
 

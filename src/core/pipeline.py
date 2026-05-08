@@ -55,29 +55,17 @@ class AnalysisPipeline:
         if self._initialized:
             return
 
-        mode = "CLOUD" if self.use_cloud else "LOCAL"
+        mode = "ensemble" if self.use_cloud else "single_model"
         logger.info("initializing_pipeline", mode=mode)
 
         try:
-            # Initialize modules based on mode
             if self.use_cloud:
-                logger.info("using_ULTIMATE_ensemble_mode",
-                           image="ENSEMBLE: EfficientNet-B7 + XceptionNet + CLIP (98%+)",
-                           text="ENSEMBLE: ChatGPT Detector + OpenAI Detector + Rules (95%+)",
-                           note="🏆 STATE-OF-THE-ART ACCURACY + 100% FREE - No API costs!")
-
-                # ULTIMATE ensemble image detector (98%+ accuracy, completely local)
+                # Local ensemble: EfficientNet-B7 + XceptionNet + CLIP for images,
+                # ChatGPT-detector + OpenAI-detector + rules for text.
                 self.image_module = EnsembleImageDetector(self.config.MODEL.__dict__)
-
-                # ULTIMATE ensemble text detector (95%+ accuracy, optimized for short text)
                 self.text_module = EnsembleTextDetector(self.config.MODEL.__dict__)
             else:
-                logger.info("using_legacy_local_models",
-                           image="ResNet-18",
-                           text="DistilBERT",
-                           note="Lower accuracy - consider enabling hybrid mode")
-
-                # Legacy local models (on-device inference)
+                # Single-model fallback: ResNet-18 + DistilBERT.
                 self.image_module = ImageAuthenticityModule(self.config.MODEL.__dict__)
                 self.text_module = TextAuthenticityModule(self.config.MODEL.__dict__)
 

@@ -1,0 +1,24 @@
+# Local development stack. The frontend runs against the dockerized
+# backend through Vite's proxy (set VITE_PROXY_TARGET=http://localhost:8000).
+
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      ENVIRONMENT: development
+      DEVICE: cpu
+      USE_CLOUD_APIS: "true"
+      LOG_LEVEL: INFO
+    volumes:
+      # Persist downloaded model weights between container rebuilds so we
+      # don't re-download EfficientNet/Xception/CLIP every `docker compose up`.
+      - models:/app/models
+      - uploads:/app/uploads
+      - logs:/app/logs
+
+volumes:
+  models:
+  uploads:
+  logs:

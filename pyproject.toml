@@ -1,0 +1,34 @@
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["models", "uploads", "visualizations", "logs", "scripts/data"]
+
+[tool.ruff.lint]
+# Pragmatic starter set: pyflakes, pycodestyle errors, isort, bugbear,
+# unused-imports/args, and a few obvious correctness checks. Skip the
+# heavy stylistic rules so the existing code doesn't light up red.
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # bugbear
+    "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
+]
+ignore = [
+    "E501",  # line length is enforced by formatter
+    "B008",  # FastAPI uses Depends(...) / Form(...) in defaults idiomatically
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+filterwarnings = [
+    # Suppress deprecation warnings from FastAPI's @on_event and starlette's
+    # 413 status name; tracked separately, not test failures.
+    "ignore::DeprecationWarning:fastapi.*",
+    "ignore::DeprecationWarning:src.api.app",
+]
