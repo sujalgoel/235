@@ -5,5 +5,8 @@
   "framework": null,
   "outputDirectory": "viva",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/", "destination": "/deck" }
+  ]
 }
