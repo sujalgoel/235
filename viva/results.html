@@ -1,0 +1,1992 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>RealityCheck AI · Empirical Results · Group 235</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#F5F3F4; --paper-2:#FFFFFF;
+    --ink:#0B090A; --ink-2:#161A1D;
+    --mute:#0B090A99; --line:#D3D3D3; --line-2:#B1A7A6;
+    --fake:#BA181B; --fake-soft:#F3D0D1;
+    --trust:#0B090A; --warn:#660708;
+    --ok:#1E5947; --ok-soft:#D7EAE2;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--paper); color:var(--ink); font-family:'Geist', system-ui, sans-serif; -webkit-font-smoothing:antialiased; }
+
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 56px 56px 96px; }
+
+  header.top {
+    display:flex; justify-content:space-between; align-items:flex-end;
+    padding-bottom:18px; border-bottom:1px solid var(--line); margin-bottom:40px;
+  }
+  header .brand { display:flex; align-items:center; gap:14px; font-family:'Geist Mono', monospace; font-size:13px; letter-spacing:0.18em; text-transform:uppercase; color:var(--mute); }
+  header .brand .dot { width:10px; height:10px; background:var(--fake); display:inline-block; }
+  header .meta { font-family:'Geist Mono', monospace; font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--mute); text-align:right; line-height:1.6; }
+
+  h1 { font-size: 72px; line-height: 1.02; letter-spacing:-0.028em; font-weight:600; margin:8px 0 12px; }
+  h1 em { font-style:normal; color:var(--fake); }
+  .lede { font-size: 22px; line-height: 1.5; color:var(--ink-2); max-width:980px; margin-bottom:16px; }
+  .sub-lede { font-size:14px; color:var(--mute); max-width:880px; line-height:1.55; }
+
+  .eyebrow { display:inline-block; font-family:'Geist Mono', monospace; font-size:11px; letter-spacing:0.18em; text-transform:uppercase; color:var(--fake); padding:4px 10px; border:1px solid var(--fake); border-radius:2px; }
+
+  .section { margin-top: 72px; }
+  .section .section-head { display:flex; justify-content:space-between; align-items:flex-end; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:24px; }
+  .section h2 { font-size: 44px; letter-spacing:-0.018em; margin: 18px 0 0; font-weight:600; }
+  .section h2 em { font-style:normal; color:var(--mute); font-weight:500; }
+  .section h3 { font-size:16px; letter-spacing:0.06em; text-transform:uppercase; font-family:'Geist Mono', monospace; font-weight:600; margin: 36px 0 12px; color:var(--ink); }
+
+  .kpis { display:grid; grid-template-columns: repeat(4, 1fr); gap:14px; margin-top:14px; }
+  .kpi { background:var(--paper-2); border:1px solid var(--line); padding:22px 22px 20px; }
+  .kpi-v { font-family:'Instrument Serif', serif; font-size: 56px; line-height:1; letter-spacing:-0.01em; color:var(--ink); }
+  .kpi-l { font-family:'Geist Mono', monospace; font-size:10.5px; letter-spacing:0.16em; text-transform:uppercase; color:var(--mute); margin-top:14px; }
+  .kpi-sub { margin-top:6px; font-size:12px; color:var(--ink-2); font-family:'Geist Mono', monospace; letter-spacing:0.04em; }
+
+  .grid { display:grid; gap:24px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .grid.asym { grid-template-columns: 420px 1fr; }
+
+  .card { background:var(--paper-2); border:1px solid var(--line); padding:24px; }
+  .card h4 { margin: 0 0 14px; font-size:14px; font-weight:600; font-family:'Geist Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); }
+  .card .small { font-size: 12px; color:var(--mute); margin-top:8px; font-family:'Geist Mono', monospace; letter-spacing:0.04em; }
+
+  table.cmatrix { width:100%; border-collapse:collapse; font-family:'Geist Mono', monospace; font-size:12px; margin-top:4px; }
+  table.cmatrix th, table.cmatrix td { padding:18px 18px; text-align:center; border:1px solid var(--line); position:relative; }
+  table.cmatrix th { background: var(--paper); color:var(--mute); font-weight:600; letter-spacing:0.1em; text-transform:uppercase; font-size:10.5px; }
+  table.cmatrix td { font-size:30px; font-family:'Instrument Serif', serif; font-weight:500; line-height:1.1; }
+  table.cmatrix td small { display:block; font-family:'Geist Mono', monospace; font-size:10px; letter-spacing:0.1em; color:var(--mute); margin-top:4px; }
+  table.cmatrix td.tp, table.cmatrix td.tn { background:var(--ok-soft); color:var(--ok); }
+  table.cmatrix td.fp, table.cmatrix td.fn { background:var(--fake-soft); color:var(--fake); }
+
+  .stat-line { display:flex; gap:36px; flex-wrap:wrap; font-family:'Geist Mono', monospace; font-size:14px; }
+  .stat-line .pair span:first-child { color:var(--mute); font-size:10.5px; letter-spacing:0.14em; text-transform:uppercase; display:block; margin-bottom:4px; }
+  .stat-line .pair strong { font-size:24px; font-family:'Instrument Serif', serif; font-weight:500; color:var(--ink); }
+
+  /* Image sample grid */
+  .img-grid { display:grid; grid-template-columns:repeat(6, 1fr); gap:10px; }
+  .img-tile { background:var(--paper-2); border:2px solid transparent; padding:0; transition:transform 0.15s ease; }
+  .img-tile.bad { border-color:var(--fake); }
+  .img-tile.ok  { border-color:var(--line); }
+  .img-tile:hover { transform:translateY(-2px); }
+  .img-tile .thumb { width:100%; aspect-ratio:1; background:#222; }
+  .img-tile .thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .tile-bar { display:flex; align-items:center; padding:8px 10px; gap:6px; font-family:'Geist Mono', monospace; font-size:10px; }
+  .tile-bar .arrow { color:var(--mute); font-size:9px; }
+  .badge { font-size:9px; padding:2px 5px; border-radius:2px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; }
+  .badge.fake, .badge.ai { background:var(--fake-soft); color:var(--fake); }
+  .badge.real, .badge.human { background:var(--ok-soft); color:var(--ok); }
+  .tile-bar .score { margin-left:auto; color:var(--ink); font-weight:600; }
+
+  /* Text sample grid */
+  .txt-grid { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+  .txt-tile { background:var(--paper-2); border:2px solid var(--line); padding:14px 16px; }
+  .txt-tile.bad { border-color:var(--fake); }
+  .txt-tile .bio { font-style:italic; color:var(--ink); margin-bottom:10px; line-height:1.4; font-size:13px; }
+
+  /* Legend */
+  .legend { display:flex; align-items:center; gap:14px; font-family:'Geist Mono', monospace; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--mute); margin-top:10px; flex-wrap:wrap; }
+  .legend .sw { width:12px; height:12px; display:inline-block; }
+
+  /* Section toggle (filter chips) */
+  .filters { display:flex; gap:8px; margin-bottom:16px; font-family:'Geist Mono', monospace; }
+  .filters button { background:var(--paper-2); border:1px solid var(--line); color:var(--ink); font:inherit; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; padding:8px 14px; cursor:pointer; border-radius:2px; }
+  .filters button[data-active="true"] { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+
+  /* Takeaways */
+  .takeaway-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .takeaway { background:var(--paper-2); border-left:4px solid var(--fake); padding:20px 24px; }
+  .takeaway.good { border-left-color: var(--ok); }
+  .takeaway h4 { margin:0 0 8px; font-size:14px; font-family:'Geist Mono', monospace; letter-spacing:0.08em; text-transform:uppercase; color:var(--mute); }
+  .takeaway p { margin:0; line-height:1.6; font-size:15px; }
+
+  footer { margin-top:80px; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; font-family:'Geist Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--mute); }
+
+  @media (max-width: 900px) {
+    .img-grid { grid-template-columns: repeat(3, 1fr); }
+    .txt-grid { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: 1fr 1fr; }
+    .grid.cols-2, .grid.cols-3, .grid.cols-4, .grid.asym { grid-template-columns: 1fr; }
+    h1 { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="top">
+      <div class="brand"><span class="dot"></span>RealityCheck AI · Empirical Results</div>
+      <div class="meta">
+        Group 235 · R-235 · REV.A · 2025-26<br/>
+        Generated 2026-05-15T00:41:20
+      </div>
+    </header>
+
+    <span class="eyebrow">§ Empirical Evaluation</span>
+    <h1>Results <em>— measured, not promised.</em></h1>
+    <p class="lede">
+      We ran 59 image samples and 100 text bios through the live RealityCheck AI API.
+      Every metric on this page is computed from the actual pipeline output, not from training-set reports
+      or upstream model claims.
+    </p>
+    <p class="sub-lede">
+      Image samples: 30 synthetic faces from thispersondoesnotexist.com,
+      29 real portraits from Unsplash CDN.
+      Text samples: 50 AI-flavoured bios written to maximise LLM-like signal,
+      50 human-written casual bios from public sources.
+      All inference on CPU through the standard production pipeline.
+    </p>
+
+    <!-- ========== HEADLINE GRID ========== -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">§ 01 · Headline</span>
+          <h2>The whole story <em>— in one row.</em></h2>
+        </div>
+      </div>
+
+      <div class="kpis" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="kpi"><div class="kpi-v">67.8%</div><div class="kpi-l">Image accuracy</div><div class="kpi-sub">40 of 59 correct</div></div>
+        <div class="kpi"><div class="kpi-v">0.697</div><div class="kpi-l">Image AUC</div><div class="kpi-sub">threshold-independent ranking quality</div></div>
+        <div class="kpi"><div class="kpi-v">57.0%</div><div class="kpi-l">Text accuracy</div><div class="kpi-sub">57 of 100 correct</div></div>
+        <div class="kpi"><div class="kpi-v">0.500</div><div class="kpi-l">Text AUC</div><div class="kpi-sub">threshold-independent ranking quality</div></div>
+      </div>
+    </section>
+
+    <!-- ========== IMAGE MODULE ========== -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">§ 02 · Image Ensemble</span>
+          <h2>Image module <em>— EfficientNet-B7 + XceptionNet + CLIP</em></h2>
+        </div>
+        <div style="font-family:'Geist Mono',monospace; font-size:11px; letter-spacing:0.1em; color:var(--mute); text-transform:uppercase;">
+          n = 59 samples
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-v">67.8%</div><div class="kpi-l">Accuracy</div><div class="kpi-sub">40 of 59 correct</div></div>
+        <div class="kpi"><div class="kpi-v">70.4%</div><div class="kpi-l">Precision (fake)</div><div class="kpi-sub">when we flag fake, we are right 70.4%</div></div>
+        <div class="kpi"><div class="kpi-v">63.3%</div><div class="kpi-l">Recall (fake)</div><div class="kpi-sub">we catch 19 of 30 synthetic faces</div></div>
+        <div class="kpi"><div class="kpi-v">0.667</div><div class="kpi-l">F1</div></div>
+      </div>
+
+      <div class="grid asym" style="margin-top:24px;">
+        <div class="card">
+          <h4>Confusion matrix · positive = fake</h4>
+          
+    <table class="cmatrix">
+      <thead>
+        <tr><td></td><th colspan="2">Predicted</th></tr>
+        <tr><td></td><th>fake</th><th>real</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>True fake</th><td class="tp">19<br/><small>TP</small></td><td class="fn">11<br/><small>FN</small></td></tr>
+        <tr><th>True real</th><td class="fp">8<br/><small>FP</small></td><td class="tn">21<br/><small>TN</small></td></tr>
+      </tbody>
+    </table>
+          <div class="small" style="margin-top:14px;">
+            Real recall: 72.4% (21 of 29 real photos correctly cleared)<br/>
+            Fake recall: 63.3% (19 of 30 synthetic faces caught)
+          </div>
+        </div>
+        <div class="card">
+          <h4>Score distribution · 20 bins</h4>
+          <svg viewBox="0 0 600 220" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="180" x2="580" y2="180" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="20" x2="50" y2="180" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="180" x2="50" y2="184" stroke="#0B090A" stroke-width="1"/><text x="50" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.0</text><line x1="182.5" y1="180" x2="182.5" y2="184" stroke="#0B090A" stroke-width="1"/><text x="182.5" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.25</text><line x1="315.0" y1="180" x2="315.0" y2="184" stroke="#0B090A" stroke-width="1"/><text x="315.0" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.5</text><line x1="447.5" y1="180" x2="447.5" y2="184" stroke="#0B090A" stroke-width="1"/><text x="447.5" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.75</text><line x1="580.0" y1="180" x2="580.0" y2="184" stroke="#0B090A" stroke-width="1"/><text x="580.0" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">1.0</text><line x1="46" y1="180.0" x2="50" y2="180.0" stroke="#0B090A" stroke-width="1"/><text x="42" y="184.0" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0</text><line x1="46" y1="108.88888888888889" x2="50" y2="108.88888888888889" stroke="#0B090A" stroke-width="1"/><text x="42" y="112.88888888888889" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">4</text><line x1="46" y1="20.0" x2="50" y2="20.0" stroke="#0B090A" stroke-width="1"/><text x="42" y="24.0" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">9</text><rect x="51.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="64.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="77.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="90.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="104.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="117.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="130.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="143.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="157.0" y="20.0" width="12.2" height="160.0" fill="#BA181B" rx="1"/><rect x="170.2" y="126.7" width="12.2" height="53.3" fill="#1E5947" rx="1"/><rect x="183.5" y="162.2" width="12.2" height="17.8" fill="#BA181B" rx="1"/><rect x="196.8" y="126.7" width="12.2" height="53.3" fill="#1E5947" rx="1"/><rect x="210.0" y="144.4" width="12.2" height="35.6" fill="#BA181B" rx="1"/><rect x="223.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="236.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="249.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="263.0" y="126.7" width="12.2" height="53.3" fill="#BA181B" rx="1"/><rect x="276.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="289.5" y="108.9" width="12.2" height="71.1" fill="#BA181B" rx="1"/><rect x="302.8" y="144.4" width="12.2" height="35.6" fill="#1E5947" rx="1"/><rect x="316.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="329.2" y="162.2" width="12.2" height="17.8" fill="#1E5947" rx="1"/><rect x="342.5" y="144.4" width="12.2" height="35.6" fill="#BA181B" rx="1"/><rect x="355.8" y="108.9" width="12.2" height="71.1" fill="#1E5947" rx="1"/><rect x="369.0" y="162.2" width="12.2" height="17.8" fill="#BA181B" rx="1"/><rect x="382.2" y="144.4" width="12.2" height="35.6" fill="#1E5947" rx="1"/><rect x="395.5" y="144.4" width="12.2" height="35.6" fill="#BA181B" rx="1"/><rect x="408.8" y="108.9" width="12.2" height="71.1" fill="#1E5947" rx="1"/><rect x="422.0" y="73.3" width="12.2" height="106.7" fill="#BA181B" rx="1"/><rect x="435.2" y="37.8" width="12.2" height="142.2" fill="#1E5947" rx="1"/><rect x="448.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="461.8" y="144.4" width="12.2" height="35.6" fill="#1E5947" rx="1"/><rect x="475.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="488.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="501.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="514.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="528.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="541.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="554.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="567.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><text x="315.0" y="214" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.08em">SCORE (0 = FAKE/AI · 1 = REAL/HUMAN)</text></svg>
+          <div class="legend">
+            <span><span class="sw" style="background:#BA181B;"></span>30 synthetic faces (TPDNE)</span>
+            <span><span class="sw" style="background:#1E5947;"></span>29 real portraits (Unsplash)</span>
+          </div>
+          <div class="small">Low score = predicted fake. High score = predicted real. The model's decision boundary sits at 0.5.</div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:24px;">
+        <div class="card">
+          <h4>ROC curve · image</h4>
+          <svg viewBox="0 0 380 380" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+<line x1="40" y1="340" x2="340" y2="40" stroke="#0B090A33" stroke-width="1" stroke-dasharray="4 4"/><line x1="40" y1="340" x2="340" y2="340" stroke="#0B090A" stroke-width="1"/><line x1="40" y1="40" x2="40" y2="340" stroke="#0B090A" stroke-width="1"/><text x="40.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.0</text><text x="32" y="343.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.0</text><text x="190.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.5</text><text x="32" y="193.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.5</text><text x="340.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">1.0</text><text x="32" y="43.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">1.0</text><text x="190.0" y="372" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.06em">FALSE POSITIVE RATE</text><text x="12" y="190.0" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.06em" transform="rotate(-90 12 190.0)">TRUE POSITIVE RATE</text>
+<path d="M 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 50.3 320.0 L 50.3 300.0 L 60.7 260.0 L 71.0 250.0 L 71.0 240.0 L 81.4 240.0 L 91.7 240.0 L 102.1 240.0 L 102.1 240.0 L 102.1 240.0 L 102.1 240.0 L 102.1 240.0 L 102.1 230.0 L 102.1 220.0 L 102.1 220.0 L 102.1 220.0 L 102.1 220.0 L 102.1 220.0 L 102.1 220.0 L 102.1 220.0 L 102.1 210.0 L 102.1 200.0 L 102.1 200.0 L 102.1 190.0 L 112.4 190.0 L 122.8 190.0 L 122.8 170.0 L 122.8 170.0 L 122.8 150.0 L 122.8 150.0 L 133.1 150.0 L 133.1 150.0 L 133.1 150.0 L 133.1 150.0 L 133.1 150.0 L 133.1 140.0 L 133.1 140.0 L 164.1 140.0 L 174.5 130.0 L 174.5 120.0 L 174.5 120.0 L 174.5 120.0 L 184.8 120.0 L 195.2 120.0 L 195.2 120.0 L 195.2 100.0 L 195.2 100.0 L 215.9 100.0 L 236.6 100.0 L 246.9 90.0 L 246.9 70.0 L 267.6 40.0 L 298.6 40.0 L 319.3 40.0 L 329.7 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0" fill="none" stroke="#BA181B" stroke-width="2.2"/>
+<text x="328" y="58" text-anchor="end" font-family="Geist Mono, monospace" font-size="12" font-weight="600" fill="#BA181B">AUC = 0.697</text>
+</svg>
+          <div class="small">Each point is a different decision threshold. AUC = 0.697 indicates threshold-independent separation between the two classes.</div>
+        </div>
+        <div class="card">
+          <h4>Threshold sweep · image</h4>
+          <svg viewBox="0 0 600 240" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="155.0" x2="470" y2="155.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="110.0" x2="470" y2="110.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="65.0" x2="470" y2="65.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="200" x2="470" y2="200" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="20" x2="50" y2="200" stroke="#0B090A" stroke-width="1"/><text x="50.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.0</text><text x="155.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.25</text><text x="260.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.5</text><text x="365.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.75</text><text x="470.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">1.0</text><text x="42" y="203.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.0</text><text x="42" y="113.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.5</text><text x="42" y="23.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">1.0</text><path d="M 54.2 111.5 L 58.4 111.5 L 62.6 111.5 L 66.8 111.5 L 71.0 111.5 L 75.2 111.5 L 79.4 111.5 L 83.6 111.5 L 87.8 111.5 L 92.0 111.5 L 96.2 111.5 L 100.4 111.5 L 104.6 111.5 L 108.8 111.5 L 113.0 111.5 L 117.2 111.5 L 121.4 111.5 L 125.6 111.5 L 129.8 111.5 L 134.0 111.5 L 138.2 111.5 L 142.4 108.5 L 146.6 102.4 L 150.8 93.2 L 155.0 93.2 L 159.2 90.2 L 163.4 93.2 L 167.6 96.3 L 171.8 99.3 L 176.0 99.3 L 180.2 99.3 L 184.4 99.3 L 188.6 99.3 L 192.8 96.3 L 197.0 93.2 L 201.2 93.2 L 205.4 93.2 L 209.6 93.2 L 213.8 93.2 L 218.0 93.2 L 222.2 93.2 L 226.4 90.2 L 230.6 87.1 L 234.8 87.1 L 239.0 84.1 L 243.2 87.1 L 247.4 90.2 L 251.6 84.1 L 255.8 84.1 L 260.0 78.0 L 264.2 78.0 L 268.4 81.0 L 272.6 81.0 L 276.8 81.0 L 281.0 81.0 L 285.2 81.0 L 289.4 78.0 L 293.6 78.0 L 297.8 87.1 L 302.0 87.1 L 306.2 84.1 L 310.4 84.1 L 314.6 84.1 L 318.8 87.1 L 323.0 90.2 L 327.2 90.2 L 331.4 84.1 L 335.6 84.1 L 339.8 90.2 L 344.0 96.3 L 348.2 96.3 L 352.4 90.2 L 356.6 87.1 L 360.8 96.3 L 365.0 102.4 L 369.2 105.4 L 373.4 108.5 L 377.6 108.5 L 381.8 108.5 L 386.0 108.5 L 390.2 108.5 L 394.4 108.5 L 398.6 108.5 L 402.8 108.5 L 407.0 108.5 L 411.2 108.5 L 415.4 108.5 L 419.6 108.5 L 423.8 108.5 L 428.0 108.5 L 432.2 108.5 L 436.4 108.5 L 440.6 108.5 L 444.8 108.5 L 449.0 108.5 L 453.2 108.5 L 457.4 108.5 L 461.6 108.5 L 465.8 108.5" fill="none" stroke="#BA181B" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 80.0 L 146.6 56.0 L 150.8 56.0 L 155.0 65.0 L 159.2 61.5 L 163.4 71.4 L 167.6 80.0 L 171.8 87.5 L 176.0 87.5 L 180.2 87.5 L 184.4 87.5 L 188.6 87.5 L 192.8 83.5 L 197.0 80.0 L 201.2 80.0 L 205.4 80.0 L 209.6 80.0 L 213.8 80.0 L 218.0 80.0 L 222.2 80.0 L 226.4 76.8 L 230.6 74.0 L 234.8 74.0 L 239.0 71.4 L 243.2 77.3 L 247.4 82.6 L 251.6 77.6 L 255.8 77.6 L 260.0 73.3 L 264.2 73.3 L 268.4 77.9 L 272.6 77.9 L 276.8 77.9 L 281.0 77.9 L 285.2 77.9 L 289.4 75.9 L 293.6 75.9 L 297.8 87.5 L 302.0 88.8 L 306.2 86.9 L 310.4 86.9 L 314.6 86.9 L 318.8 90.0 L 323.0 93.0 L 327.2 93.0 L 331.4 89.2 L 335.6 89.2 L 339.8 94.6 L 344.0 99.5 L 348.2 100.0 L 352.4 96.6 L 356.6 96.2 L 360.8 101.8 L 365.0 105.3 L 369.2 106.9 L 373.4 108.5 L 377.6 108.5 L 381.8 108.5 L 386.0 108.5 L 390.2 108.5 L 394.4 108.5 L 398.6 108.5 L 402.8 108.5 L 407.0 108.5 L 411.2 108.5 L 415.4 108.5 L 419.6 108.5 L 423.8 108.5 L 428.0 108.5 L 432.2 108.5 L 436.4 108.5 L 440.6 108.5 L 444.8 108.5 L 449.0 108.5 L 453.2 108.5 L 457.4 108.5 L 461.6 108.5 L 465.8 108.5" fill="none" stroke="#A4161A" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 188.0 L 146.6 176.0 L 150.8 152.0 L 155.0 146.0 L 159.2 140.0 L 163.4 140.0 L 167.6 140.0 L 171.8 140.0 L 176.0 140.0 L 180.2 140.0 L 184.4 140.0 L 188.6 140.0 L 192.8 134.0 L 197.0 128.0 L 201.2 128.0 L 205.4 128.0 L 209.6 128.0 L 213.8 128.0 L 218.0 128.0 L 222.2 128.0 L 226.4 122.0 L 230.6 116.0 L 234.8 116.0 L 239.0 110.0 L 243.2 110.0 L 247.4 110.0 L 251.6 98.0 L 255.8 98.0 L 260.0 86.0 L 264.2 86.0 L 268.4 86.0 L 272.6 86.0 L 276.8 86.0 L 281.0 86.0 L 285.2 86.0 L 289.4 80.0 L 293.6 80.0 L 297.8 80.0 L 302.0 74.0 L 306.2 68.0 L 310.4 68.0 L 314.6 68.0 L 318.8 68.0 L 323.0 68.0 L 327.2 68.0 L 331.4 56.0 L 335.6 56.0 L 339.8 56.0 L 344.0 56.0 L 348.2 50.0 L 352.4 38.0 L 356.6 20.0 L 360.8 20.0 L 365.0 20.0 L 369.2 20.0 L 373.4 20.0 L 377.6 20.0 L 381.8 20.0 L 386.0 20.0 L 390.2 20.0 L 394.4 20.0 L 398.6 20.0 L 402.8 20.0 L 407.0 20.0 L 411.2 20.0 L 415.4 20.0 L 419.6 20.0 L 423.8 20.0 L 428.0 20.0 L 432.2 20.0 L 436.4 20.0 L 440.6 20.0 L 444.8 20.0 L 449.0 20.0 L 453.2 20.0 L 457.4 20.0 L 461.6 20.0 L 465.8 20.0" fill="none" stroke="#660708" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 178.2 L 146.6 158.9 L 150.8 128.0 L 155.0 122.9 L 159.2 116.3 L 163.4 118.2 L 167.6 120.0 L 171.8 121.7 L 176.0 121.7 L 180.2 121.7 L 184.4 121.7 L 188.6 121.7 L 192.8 115.7 L 197.0 110.0 L 201.2 110.0 L 205.4 110.0 L 209.6 110.0 L 213.8 110.0 L 218.0 110.0 L 222.2 110.0 L 226.4 104.5 L 230.6 99.2 L 234.8 99.2 L 239.0 94.1 L 243.2 96.2 L 247.4 98.1 L 251.6 88.7 L 255.8 88.7 L 260.0 80.0 L 264.2 80.0 L 268.4 82.1 L 272.6 82.1 L 276.8 82.1 L 281.0 82.1 L 285.2 82.1 L 289.4 78.0 L 293.6 78.0 L 297.8 83.9 L 302.0 81.9 L 306.2 78.2 L 310.4 78.2 L 314.6 78.2 L 318.8 80.0 L 323.0 81.8 L 327.2 81.8 L 331.4 74.8 L 335.6 74.8 L 339.8 78.3 L 344.0 81.6 L 348.2 80.0 L 352.4 73.8 L 356.6 68.3 L 360.8 72.9 L 365.0 75.9 L 369.2 77.3 L 373.4 78.7 L 377.6 78.7 L 381.8 78.7 L 386.0 78.7 L 390.2 78.7 L 394.4 78.7 L 398.6 78.7 L 402.8 78.7 L 407.0 78.7 L 411.2 78.7 L 415.4 78.7 L 419.6 78.7 L 423.8 78.7 L 428.0 78.7 L 432.2 78.7 L 436.4 78.7 L 440.6 78.7 L 444.8 78.7 L 449.0 78.7 L 453.2 78.7 L 457.4 78.7 L 461.6 78.7 L 465.8 78.7" fill="none" stroke="#0B090A" stroke-width="2"/><rect x="482" y="23" width="14" height="3" fill="#BA181B"/><text x="500" y="30" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Accuracy</text><rect x="482" y="47" width="14" height="3" fill="#A4161A"/><text x="500" y="54" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Precision</text><rect x="482" y="71" width="14" height="3" fill="#660708"/><text x="500" y="78" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Recall</text><rect x="482" y="95" width="14" height="3" fill="#0B090A"/><text x="500" y="102" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">F1</text><text x="260.0" y="234" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99" letter-spacing="0.06em">SCORE THRESHOLD</text></svg>
+          <div class="small">The model's default threshold is 0.5. Other thresholds trade precision and recall differently.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <h4>Latency · image · end-to-end including Grad-CAM</h4>
+        <div class="stat-line" style="margin-bottom:14px;">
+          <div class="pair"><span>mean</span><strong>19.7 s</strong></div>
+          <div class="pair"><span>min</span><strong>8.8 s</strong></div>
+          <div class="pair"><span>max</span><strong>69.5 s</strong></div>
+        </div>
+        <svg viewBox="0 0 900 140" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+<line x1="30.0" y1="70.0" x2="869.9999999999862" y2="70.0" stroke="#BA181B" stroke-width="1"/>
+<rect x="100.7" y="52.0" width="117.9" height="36" fill="#BA181B22" stroke="#BA181B" stroke-width="1.5"/>
+<line x1="146.8" y1="52.0" x2="146.8" y2="88.0" stroke="#BA181B" stroke-width="2"/>
+<line x1="30.0" y1="58.0" x2="30.0" y2="82.0" stroke="#BA181B" stroke-width="1.5"/>
+<line x1="869.9999999999862" y1="58.0" x2="869.9999999999862" y2="82.0" stroke="#BA181B" stroke-width="1.5"/>
+<text x="30.0" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99">8772</text>
+<text x="146.8" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A" font-weight="600">17208</text>
+<text x="869.9999999999862" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99">69451</text>
+<text x="100.6583692454534" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">p25</text>
+<text x="146.78300125494184" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A">p50</text>
+<text x="218.51497316825612" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">p75</text>
+<text x="450.0" y="136" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" letter-spacing="0.08em" fill="#0B090A99">LATENCY MS · n=59</text>
+</svg>
+        <div class="small">Distribution box: minimum, p25, median, p75, maximum. CPU inference dominates the wall clock.</div>
+      </div>
+
+      <h3>All 59 image samples</h3>
+      <div class="filters" data-target=".img-grid">
+        <button data-filter="all" data-active="true">All (59)</button>
+        <button data-filter="ok">Correct (40)</button>
+        <button data-filter="bad">Wrong (19)</button>
+        <button data-filter="fake-only">Fakes only (30)</button>
+        <button data-filter="real-only">Reals only (29)</button>
+      </div>
+      <div class="legend" style="margin-bottom:14px;">
+        <span><span class="sw" style="background:#BA181B;"></span>red border = wrong prediction</span>
+        <span><span class="sw" style="background:#D3D3D3;"></span>grey border = correct prediction</span>
+      </div>
+      <div class="img-grid">
+        
+    <div class="img-tile ok" title="score=0.226 conf=0.77 latency=23111ms">
+      <div class="thumb"><img src="assets/bench/img/fake_00.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.23</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.348 conf=0.65 latency=22437ms">
+      <div class="thumb"><img src="assets/bench/img/fake_01.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.35</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.492 conf=0.51 latency=16804ms">
+      <div class="thumb"><img src="assets/bench/img/fake_02.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.49</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.669 conf=0.67 latency=15547ms">
+      <div class="thumb"><img src="assets/bench/img/fake_03.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.67</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.235 conf=0.76 latency=20727ms">
+      <div class="thumb"><img src="assets/bench/img/fake_04.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.24</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.500 conf=0.50 latency=23594ms">
+      <div class="thumb"><img src="assets/bench/img/fake_05.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.50</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.211 conf=0.79 latency=69451ms">
+      <div class="thumb"><img src="assets/bench/img/fake_06.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.21</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.210 conf=0.79 latency=28371ms">
+      <div class="thumb"><img src="assets/bench/img/fake_07.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.21</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.417 conf=0.58 latency=22389ms">
+      <div class="thumb"><img src="assets/bench/img/fake_08.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.42</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.720 conf=0.72 latency=19307ms">
+      <div class="thumb"><img src="assets/bench/img/fake_09.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.72</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.443 conf=0.56 latency=15646ms">
+      <div class="thumb"><img src="assets/bench/img/fake_10.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.44</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.421 conf=0.58 latency=15247ms">
+      <div class="thumb"><img src="assets/bench/img/fake_11.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.42</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.254 conf=0.75 latency=15933ms">
+      <div class="thumb"><img src="assets/bench/img/fake_12.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.25</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.240 conf=0.76 latency=19389ms">
+      <div class="thumb"><img src="assets/bench/img/fake_13.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.24</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.336 conf=0.66 latency=17082ms">
+      <div class="thumb"><img src="assets/bench/img/fake_14.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.34</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.222 conf=0.78 latency=14664ms">
+      <div class="thumb"><img src="assets/bench/img/fake_15.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.22</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.730 conf=0.73 latency=18328ms">
+      <div class="thumb"><img src="assets/bench/img/fake_16.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.73</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.234 conf=0.77 latency=13522ms">
+      <div class="thumb"><img src="assets/bench/img/fake_17.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.23</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.721 conf=0.72 latency=13451ms">
+      <div class="thumb"><img src="assets/bench/img/fake_18.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.72</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.602 conf=0.60 latency=25860ms">
+      <div class="thumb"><img src="assets/bench/img/fake_19.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.60</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.715 conf=0.71 latency=29110ms">
+      <div class="thumb"><img src="assets/bench/img/fake_20.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.71</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.238 conf=0.76 latency=22406ms">
+      <div class="thumb"><img src="assets/bench/img/fake_21.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.24</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.718 conf=0.72 latency=12793ms">
+      <div class="thumb"><img src="assets/bench/img/fake_22.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.72</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.703 conf=0.70 latency=23503ms">
+      <div class="thumb"><img src="assets/bench/img/fake_23.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.70</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.598 conf=0.60 latency=19419ms">
+      <div class="thumb"><img src="assets/bench/img/fake_24.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.60</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.477 conf=0.52 latency=22258ms">
+      <div class="thumb"><img src="assets/bench/img/fake_25.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.48</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.669 conf=0.67 latency=50225ms">
+      <div class="thumb"><img src="assets/bench/img/fake_26.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.67</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.477 conf=0.52 latency=15780ms">
+      <div class="thumb"><img src="assets/bench/img/fake_27.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.48</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.230 conf=0.77 latency=17208ms">
+      <div class="thumb"><img src="assets/bench/img/fake_28.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.23</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.566 conf=0.57 latency=19527ms">
+      <div class="thumb"><img src="assets/bench/img/fake_29.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true fake">fake</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.57</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.681 conf=0.68 latency=8772ms">
+      <div class="thumb"><img src="assets/bench/img/real_00.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.68</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.738 conf=0.74 latency=9001ms">
+      <div class="thumb"><img src="assets/bench/img/real_01.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.74</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.757 conf=0.76 latency=10692ms">
+      <div class="thumb"><img src="assets/bench/img/real_02.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.76</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.734 conf=0.73 latency=24906ms">
+      <div class="thumb"><img src="assets/bench/img/real_03.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.73</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.218 conf=0.78 latency=11950ms">
+      <div class="thumb"><img src="assets/bench/img/real_04.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.22</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.644 conf=0.64 latency=11493ms">
+      <div class="thumb"><img src="assets/bench/img/real_05.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.64</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.722 conf=0.72 latency=10725ms">
+      <div class="thumb"><img src="assets/bench/img/real_06.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.72</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.695 conf=0.69 latency=19966ms">
+      <div class="thumb"><img src="assets/bench/img/real_07.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.69</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.762 conf=0.76 latency=36174ms">
+      <div class="thumb"><img src="assets/bench/img/real_08.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.76</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.584 conf=0.58 latency=21915ms">
+      <div class="thumb"><img src="assets/bench/img/real_09.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.58</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.582 conf=0.58 latency=16923ms">
+      <div class="thumb"><img src="assets/bench/img/real_10.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.58</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.232 conf=0.77 latency=17141ms">
+      <div class="thumb"><img src="assets/bench/img/real_11.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.23</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.464 conf=0.54 latency=17905ms">
+      <div class="thumb"><img src="assets/bench/img/real_12.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.46</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.272 conf=0.73 latency=20817ms">
+      <div class="thumb"><img src="assets/bench/img/real_13.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.27</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.745 conf=0.75 latency=20214ms">
+      <div class="thumb"><img src="assets/bench/img/real_14.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.75</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.245 conf=0.75 latency=16725ms">
+      <div class="thumb"><img src="assets/bench/img/real_15.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.25</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.598 conf=0.60 latency=16875ms">
+      <div class="thumb"><img src="assets/bench/img/real_16.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.60</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.741 conf=0.74 latency=12438ms">
+      <div class="thumb"><img src="assets/bench/img/real_17.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.74</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.515 conf=0.51 latency=13160ms">
+      <div class="thumb"><img src="assets/bench/img/real_19.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.51</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.738 conf=0.74 latency=13460ms">
+      <div class="thumb"><img src="assets/bench/img/real_20.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.74</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.284 conf=0.72 latency=12190ms">
+      <div class="thumb"><img src="assets/bench/img/real_21.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.28</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.693 conf=0.69 latency=13178ms">
+      <div class="thumb"><img src="assets/bench/img/real_22.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.69</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.722 conf=0.72 latency=16244ms">
+      <div class="thumb"><img src="assets/bench/img/real_23.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.72</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.582 conf=0.58 latency=14057ms">
+      <div class="thumb"><img src="assets/bench/img/real_24.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.58</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.705 conf=0.71 latency=13876ms">
+      <div class="thumb"><img src="assets/bench/img/real_25.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.71</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.639 conf=0.64 latency=24095ms">
+      <div class="thumb"><img src="assets/bench/img/real_26.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.64</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.460 conf=0.54 latency=22368ms">
+      <div class="thumb"><img src="assets/bench/img/real_27.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.46</span>
+      </div>
+    </div>
+    <div class="img-tile bad" title="score=0.265 conf=0.73 latency=20210ms">
+      <div class="thumb"><img src="assets/bench/img/real_28.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred fake">fake</span>
+        <span class="score">0.27</span>
+      </div>
+    </div>
+    <div class="img-tile ok" title="score=0.684 conf=0.68 latency=32359ms">
+      <div class="thumb"><img src="assets/bench/img/real_29.jpg" loading="lazy" alt=""/></div>
+      <div class="tile-bar">
+        <span class="badge true real">real</span>
+        <span class="arrow">→</span>
+        <span class="badge pred real">real</span>
+        <span class="score">0.68</span>
+      </div>
+    </div>
+      </div>
+    </section>
+
+    <!-- ========== TEXT MODULE ========== -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">§ 03 · Text Ensemble</span>
+          <h2>Text module <em>— RoBERTa-OpenAI + ChatGPT detector + rules</em></h2>
+        </div>
+        <div style="font-family:'Geist Mono',monospace; font-size:11px; letter-spacing:0.1em; color:var(--mute); text-transform:uppercase;">
+          n = 100 samples
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-v">57.0%</div><div class="kpi-l">Accuracy</div><div class="kpi-sub">57 of 100 correct</div></div>
+        <div class="kpi"><div class="kpi-v">54.0%</div><div class="kpi-l">Precision (AI)</div><div class="kpi-sub">when we flag AI, we are right 54.0%</div></div>
+        <div class="kpi"><div class="kpi-v">94.0%</div><div class="kpi-l">Recall (AI)</div><div class="kpi-sub">we catch 47 of 50 AI bios</div></div>
+        <div class="kpi"><div class="kpi-v">0.686</div><div class="kpi-l">F1</div></div>
+      </div>
+
+      <div class="grid asym" style="margin-top:24px;">
+        <div class="card">
+          <h4>Confusion matrix · positive = AI</h4>
+          
+    <table class="cmatrix">
+      <thead>
+        <tr><td></td><th colspan="2">Predicted</th></tr>
+        <tr><td></td><th>AI</th><th>human</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>True AI</th><td class="tp">47<br/><small>TP</small></td><td class="fn">3<br/><small>FN</small></td></tr>
+        <tr><th>True human</th><td class="fp">40<br/><small>FP</small></td><td class="tn">10<br/><small>TN</small></td></tr>
+      </tbody>
+    </table>
+          <div class="small" style="margin-top:14px;">
+            Human recall: 20.0% (10 of 50 human bios correctly cleared)<br/>
+            AI recall: 94.0% (47 of 50 AI bios caught)
+          </div>
+        </div>
+        <div class="card">
+          <h4>Score distribution · 20 bins</h4>
+          <svg viewBox="0 0 600 220" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="180" x2="580" y2="180" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="20" x2="50" y2="180" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="180" x2="50" y2="184" stroke="#0B090A" stroke-width="1"/><text x="50" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.0</text><line x1="182.5" y1="180" x2="182.5" y2="184" stroke="#0B090A" stroke-width="1"/><text x="182.5" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.25</text><line x1="315.0" y1="180" x2="315.0" y2="184" stroke="#0B090A" stroke-width="1"/><text x="315.0" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.5</text><line x1="447.5" y1="180" x2="447.5" y2="184" stroke="#0B090A" stroke-width="1"/><text x="447.5" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0.75</text><line x1="580.0" y1="180" x2="580.0" y2="184" stroke="#0B090A" stroke-width="1"/><text x="580.0" y="198" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">1.0</text><line x1="46" y1="180.0" x2="50" y2="180.0" stroke="#0B090A" stroke-width="1"/><text x="42" y="184.0" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">0</text><line x1="46" y1="100.0" x2="50" y2="100.0" stroke="#0B090A" stroke-width="1"/><text x="42" y="104.0" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">11</text><line x1="46" y1="20.0" x2="50" y2="20.0" stroke="#0B090A" stroke-width="1"/><text x="42" y="24.0" text-anchor="end" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A">22</text><rect x="51.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="64.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="77.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="90.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="104.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="117.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="130.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="143.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="157.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="170.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="183.5" y="172.7" width="12.2" height="7.3" fill="#BA181B" rx="1"/><rect x="196.8" y="165.5" width="12.2" height="14.5" fill="#1E5947" rx="1"/><rect x="210.0" y="100.0" width="12.2" height="80.0" fill="#BA181B" rx="1"/><rect x="223.2" y="56.4" width="12.2" height="123.6" fill="#1E5947" rx="1"/><rect x="236.5" y="20.0" width="12.2" height="160.0" fill="#BA181B" rx="1"/><rect x="249.8" y="143.6" width="12.2" height="36.4" fill="#1E5947" rx="1"/><rect x="263.0" y="136.4" width="12.2" height="43.6" fill="#BA181B" rx="1"/><rect x="276.2" y="114.5" width="12.2" height="65.5" fill="#1E5947" rx="1"/><rect x="289.5" y="129.1" width="12.2" height="50.9" fill="#BA181B" rx="1"/><rect x="302.8" y="129.1" width="12.2" height="50.9" fill="#1E5947" rx="1"/><rect x="316.0" y="165.5" width="12.2" height="14.5" fill="#BA181B" rx="1"/><rect x="329.2" y="158.2" width="12.2" height="21.8" fill="#1E5947" rx="1"/><rect x="342.5" y="172.7" width="12.2" height="7.3" fill="#BA181B" rx="1"/><rect x="355.8" y="165.5" width="12.2" height="14.5" fill="#1E5947" rx="1"/><rect x="369.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="382.2" y="150.9" width="12.2" height="29.1" fill="#1E5947" rx="1"/><rect x="395.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="408.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="422.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="435.2" y="172.7" width="12.2" height="7.3" fill="#1E5947" rx="1"/><rect x="448.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="461.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="475.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="488.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="501.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="514.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="528.0" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="541.2" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><rect x="554.5" y="180.0" width="12.2" height="0.0" fill="#BA181B" rx="1"/><rect x="567.8" y="180.0" width="12.2" height="0.0" fill="#1E5947" rx="1"/><text x="315.0" y="214" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.08em">SCORE (0 = FAKE/AI · 1 = REAL/HUMAN)</text></svg>
+          <div class="legend">
+            <span><span class="sw" style="background:#BA181B;"></span>50 AI-flavoured bios</span>
+            <span><span class="sw" style="background:#1E5947;"></span>50 human bios</span>
+          </div>
+          <div class="small">The distributions overlap heavily. The model finds AI bios easy to flag but over-flags human bios as AI too.</div>
+        </div>
+      </div>
+
+      <div class="grid cols-2" style="margin-top:24px;">
+        <div class="card">
+          <h4>ROC curve · text</h4>
+          <svg viewBox="0 0 380 380" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+<line x1="40" y1="340" x2="340" y2="40" stroke="#0B090A33" stroke-width="1" stroke-dasharray="4 4"/><line x1="40" y1="340" x2="340" y2="340" stroke="#0B090A" stroke-width="1"/><line x1="40" y1="40" x2="40" y2="340" stroke="#0B090A" stroke-width="1"/><text x="40.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.0</text><text x="32" y="343.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.0</text><text x="190.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.5</text><text x="32" y="193.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">0.5</text><text x="340.0" y="356" text-anchor="middle" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">1.0</text><text x="32" y="43.0" text-anchor="end" font-size="10" font-family="Geist Mono, monospace" fill="#0B090A99">1.0</text><text x="190.0" y="372" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.06em">FALSE POSITIVE RATE</text><text x="12" y="190.0" text-anchor="middle" font-size="11" font-family="Geist Mono, monospace" fill="#0B090A99" letter-spacing="0.06em" transform="rotate(-90 12 190.0)">TRUE POSITIVE RATE</text>
+<path d="M 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 340.0 L 40.0 334.0 L 40.0 334.0 L 40.0 334.0 L 52.0 334.0 L 64.0 334.0 L 82.0 328.0 L 118.0 328.0 L 136.0 304.0 L 154.0 268.0 L 172.0 256.0 L 178.0 232.0 L 184.0 214.0 L 184.0 172.0 L 184.0 136.0 L 196.0 130.0 L 214.0 118.0 L 226.0 118.0 L 232.0 112.0 L 238.0 100.0 L 268.0 82.0 L 280.0 70.0 L 280.0 64.0 L 280.0 64.0 L 280.0 58.0 L 280.0 58.0 L 292.0 46.0 L 292.0 46.0 L 298.0 46.0 L 298.0 46.0 L 304.0 46.0 L 310.0 46.0 L 310.0 46.0 L 310.0 46.0 L 310.0 40.0 L 310.0 40.0 L 310.0 40.0 L 322.0 40.0 L 322.0 40.0 L 334.0 40.0 L 334.0 40.0 L 334.0 40.0 L 334.0 40.0 L 334.0 40.0 L 334.0 40.0 L 334.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0 L 340.0 40.0" fill="none" stroke="#BA181B" stroke-width="2.2"/>
+<text x="328" y="58" text-anchor="end" font-family="Geist Mono, monospace" font-size="12" font-weight="600" fill="#BA181B">AUC = 0.500</text>
+</svg>
+          <div class="small">AUC = 0.500. Lower than the image side because the RoBERTa detectors were trained on a narrow AI-text distribution and trigger on too many human bios.</div>
+        </div>
+        <div class="card">
+          <h4>Threshold sweep · text</h4>
+          <svg viewBox="0 0 600 240" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="155.0" x2="470" y2="155.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="110.0" x2="470" y2="110.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="65.0" x2="470" y2="65.0" stroke="#0B090A22" stroke-width="1" stroke-dasharray="2 4"/><line x1="50" y1="200" x2="470" y2="200" stroke="#0B090A" stroke-width="1"/><line x1="50" y1="20" x2="50" y2="200" stroke="#0B090A" stroke-width="1"/><text x="50.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.0</text><text x="155.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.25</text><text x="260.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.5</text><text x="365.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.75</text><text x="470.0" y="218" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">1.0</text><text x="42" y="203.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.0</text><text x="42" y="113.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">0.5</text><text x="42" y="23.0" text-anchor="end" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">1.0</text><path d="M 54.2 110.0 L 58.4 110.0 L 62.6 110.0 L 66.8 110.0 L 71.0 110.0 L 75.2 110.0 L 79.4 110.0 L 83.6 110.0 L 87.8 110.0 L 92.0 110.0 L 96.2 110.0 L 100.4 110.0 L 104.6 110.0 L 108.8 110.0 L 113.0 110.0 L 117.2 110.0 L 121.4 110.0 L 125.6 110.0 L 129.8 110.0 L 134.0 110.0 L 138.2 110.0 L 142.4 110.0 L 146.6 110.0 L 150.8 110.0 L 155.0 110.0 L 159.2 110.0 L 163.4 108.2 L 167.6 108.2 L 171.8 108.2 L 176.0 111.8 L 180.2 115.4 L 184.4 119.0 L 188.6 129.8 L 192.8 128.0 L 197.0 122.6 L 201.2 124.4 L 205.4 119.0 L 209.6 115.4 L 213.8 102.8 L 218.0 92.0 L 222.2 93.8 L 226.4 95.6 L 230.6 99.2 L 234.8 99.2 L 239.0 97.4 L 243.2 101.0 L 247.4 101.0 L 251.6 99.2 L 255.8 99.2 L 260.0 97.4 L 264.2 97.4 L 268.4 97.4 L 272.6 97.4 L 276.8 99.2 L 281.0 99.2 L 285.2 101.0 L 289.4 102.8 L 293.6 102.8 L 297.8 102.8 L 302.0 101.0 L 306.2 101.0 L 310.4 101.0 L 314.6 104.6 L 318.8 104.6 L 323.0 108.2 L 327.2 108.2 L 331.4 108.2 L 335.6 108.2 L 339.8 108.2 L 344.0 108.2 L 348.2 108.2 L 352.4 110.0 L 356.6 110.0 L 360.8 110.0 L 365.0 110.0 L 369.2 110.0 L 373.4 110.0 L 377.6 110.0 L 381.8 110.0 L 386.0 110.0 L 390.2 110.0 L 394.4 110.0 L 398.6 110.0 L 402.8 110.0 L 407.0 110.0 L 411.2 110.0 L 415.4 110.0 L 419.6 110.0 L 423.8 110.0 L 428.0 110.0 L 432.2 110.0 L 436.4 110.0 L 440.6 110.0 L 444.8 110.0 L 449.0 110.0 L 453.2 110.0 L 457.4 110.0 L 461.6 110.0 L 465.8 110.0" fill="none" stroke="#BA181B" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 200.0 L 146.6 200.0 L 150.8 200.0 L 155.0 200.0 L 159.2 200.0 L 163.4 20.0 L 167.6 20.0 L 171.8 20.0 L 176.0 140.0 L 180.2 164.0 L 184.4 160.0 L 188.6 176.0 L 192.8 150.9 L 197.0 130.3 L 201.2 130.0 L 205.4 121.0 L 209.6 116.0 L 213.8 103.1 L 218.0 94.5 L 222.2 96.7 L 226.4 99.1 L 230.6 102.1 L 234.8 102.3 L 239.0 101.4 L 243.2 104.4 L 247.4 104.7 L 251.6 103.7 L 255.8 103.7 L 260.0 102.8 L 264.2 102.8 L 268.4 103.1 L 272.6 103.1 L 276.8 104.1 L 281.0 104.1 L 285.2 105.2 L 289.4 106.2 L 293.6 106.2 L 297.8 106.2 L 302.0 105.3 L 306.2 105.3 L 310.4 105.3 L 314.6 107.2 L 318.8 107.2 L 323.0 109.1 L 327.2 109.1 L 331.4 109.1 L 335.6 109.1 L 339.8 109.1 L 344.0 109.1 L 348.2 109.1 L 352.4 110.0 L 356.6 110.0 L 360.8 110.0 L 365.0 110.0 L 369.2 110.0 L 373.4 110.0 L 377.6 110.0 L 381.8 110.0 L 386.0 110.0 L 390.2 110.0 L 394.4 110.0 L 398.6 110.0 L 402.8 110.0 L 407.0 110.0 L 411.2 110.0 L 415.4 110.0 L 419.6 110.0 L 423.8 110.0 L 428.0 110.0 L 432.2 110.0 L 436.4 110.0 L 440.6 110.0 L 444.8 110.0 L 449.0 110.0 L 453.2 110.0 L 457.4 110.0 L 461.6 110.0 L 465.8 110.0" fill="none" stroke="#A4161A" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 200.0 L 146.6 200.0 L 150.8 200.0 L 155.0 200.0 L 159.2 200.0 L 163.4 196.4 L 167.6 196.4 L 171.8 196.4 L 176.0 196.4 L 180.2 196.4 L 184.4 192.8 L 188.6 192.8 L 192.8 178.4 L 197.0 156.8 L 201.2 149.6 L 205.4 135.2 L 209.6 124.4 L 213.8 99.2 L 218.0 77.6 L 222.2 74.0 L 226.4 66.8 L 230.6 66.8 L 234.8 63.2 L 239.0 56.0 L 243.2 45.2 L 247.4 38.0 L 251.6 34.4 L 255.8 34.4 L 260.0 30.8 L 264.2 30.8 L 268.4 23.6 L 272.6 23.6 L 276.8 23.6 L 281.0 23.6 L 285.2 23.6 L 289.4 23.6 L 293.6 23.6 L 297.8 23.6 L 302.0 20.0 L 306.2 20.0 L 310.4 20.0 L 314.6 20.0 L 318.8 20.0 L 323.0 20.0 L 327.2 20.0 L 331.4 20.0 L 335.6 20.0 L 339.8 20.0 L 344.0 20.0 L 348.2 20.0 L 352.4 20.0 L 356.6 20.0 L 360.8 20.0 L 365.0 20.0 L 369.2 20.0 L 373.4 20.0 L 377.6 20.0 L 381.8 20.0 L 386.0 20.0 L 390.2 20.0 L 394.4 20.0 L 398.6 20.0 L 402.8 20.0 L 407.0 20.0 L 411.2 20.0 L 415.4 20.0 L 419.6 20.0 L 423.8 20.0 L 428.0 20.0 L 432.2 20.0 L 436.4 20.0 L 440.6 20.0 L 444.8 20.0 L 449.0 20.0 L 453.2 20.0 L 457.4 20.0 L 461.6 20.0 L 465.8 20.0" fill="none" stroke="#660708" stroke-width="2"/><path d="M 54.2 200.0 L 58.4 200.0 L 62.6 200.0 L 66.8 200.0 L 71.0 200.0 L 75.2 200.0 L 79.4 200.0 L 83.6 200.0 L 87.8 200.0 L 92.0 200.0 L 96.2 200.0 L 100.4 200.0 L 104.6 200.0 L 108.8 200.0 L 113.0 200.0 L 117.2 200.0 L 121.4 200.0 L 125.6 200.0 L 129.8 200.0 L 134.0 200.0 L 138.2 200.0 L 142.4 200.0 L 146.6 200.0 L 150.8 200.0 L 155.0 200.0 L 159.2 200.0 L 163.4 192.9 L 167.6 192.9 L 171.8 192.9 L 176.0 193.2 L 180.2 193.5 L 184.4 187.8 L 188.6 188.9 L 192.8 170.0 L 197.0 146.7 L 201.2 141.4 L 205.4 128.8 L 209.6 120.4 L 213.8 101.2 L 218.0 86.7 L 222.2 86.5 L 226.4 85.2 L 230.6 87.1 L 234.8 86.0 L 239.0 82.9 L 243.2 81.8 L 247.4 80.0 L 251.6 78.2 L 255.8 78.2 L 260.0 76.5 L 264.2 76.5 L 268.4 74.9 L 272.6 74.9 L 276.8 75.8 L 281.0 75.8 L 285.2 76.6 L 289.4 77.5 L 293.6 77.5 L 297.8 77.5 L 302.0 75.9 L 306.2 75.9 L 310.4 75.9 L 314.6 77.6 L 318.8 77.6 L 323.0 79.2 L 327.2 79.2 L 331.4 79.2 L 335.6 79.2 L 339.8 79.2 L 344.0 79.2 L 348.2 79.2 L 352.4 80.0 L 356.6 80.0 L 360.8 80.0 L 365.0 80.0 L 369.2 80.0 L 373.4 80.0 L 377.6 80.0 L 381.8 80.0 L 386.0 80.0 L 390.2 80.0 L 394.4 80.0 L 398.6 80.0 L 402.8 80.0 L 407.0 80.0 L 411.2 80.0 L 415.4 80.0 L 419.6 80.0 L 423.8 80.0 L 428.0 80.0 L 432.2 80.0 L 436.4 80.0 L 440.6 80.0 L 444.8 80.0 L 449.0 80.0 L 453.2 80.0 L 457.4 80.0 L 461.6 80.0 L 465.8 80.0" fill="none" stroke="#0B090A" stroke-width="2"/><rect x="482" y="23" width="14" height="3" fill="#BA181B"/><text x="500" y="30" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Accuracy</text><rect x="482" y="47" width="14" height="3" fill="#A4161A"/><text x="500" y="54" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Precision</text><rect x="482" y="71" width="14" height="3" fill="#660708"/><text x="500" y="78" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">Recall</text><rect x="482" y="95" width="14" height="3" fill="#0B090A"/><text x="500" y="102" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A">F1</text><text x="260.0" y="234" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99" letter-spacing="0.06em">SCORE THRESHOLD</text></svg>
+          <div class="small">Recall on the AI class is high across most thresholds. Precision is the failure mode.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:24px;">
+        <h4>Latency · text · end-to-end including LIME</h4>
+        <div class="stat-line" style="margin-bottom:14px;">
+          <div class="pair"><span>mean</span><strong>13.9 s</strong></div>
+          <div class="pair"><span>min</span><strong>6.1 s</strong></div>
+          <div class="pair"><span>max</span><strong>81.0 s</strong></div>
+        </div>
+        <svg viewBox="0 0 900 140" style="width:100%; height:auto;" xmlns="http://www.w3.org/2000/svg">
+<line x1="30.0" y1="70.0" x2="869.9999999999887" y2="70.0" stroke="#660708" stroke-width="1"/>
+<rect x="41.1" y="52.0" width="83.6" height="36" fill="#66070822" stroke="#660708" stroke-width="1.5"/>
+<line x1="63.3" y1="52.0" x2="63.3" y2="88.0" stroke="#660708" stroke-width="2"/>
+<line x1="30.0" y1="58.0" x2="30.0" y2="82.0" stroke="#660708" stroke-width="1.5"/>
+<line x1="869.9999999999887" y1="58.0" x2="869.9999999999887" y2="82.0" stroke="#660708" stroke-width="1.5"/>
+<text x="30.0" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99">6141</text>
+<text x="63.3" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A" font-weight="600">9110</text>
+<text x="869.9999999999887" y="108.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="11" fill="#0B090A99">81030</text>
+<text x="41.063356448790564" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">p25</text>
+<text x="63.29525865416547" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A">p50</text>
+<text x="124.61752563163414" y="46.0" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" fill="#0B090A99">p75</text>
+<text x="450.0" y="136" text-anchor="middle" font-family="Geist Mono, monospace" font-size="10" letter-spacing="0.08em" fill="#0B090A99">LATENCY MS · n=100</text>
+</svg>
+        <div class="small">Most of the wall clock is the LIME perturbation step which runs the ensemble multiple times.</div>
+      </div>
+
+      <h3>All 100 text samples</h3>
+      <div class="filters" data-target=".txt-grid">
+        <button data-filter="all" data-active="true">All (100)</button>
+        <button data-filter="ok">Correct (57)</button>
+        <button data-filter="bad">Wrong (43)</button>
+        <button data-filter="ai-only">AI only (50)</button>
+        <button data-filter="human-only">Human only (50)</button>
+      </div>
+      <div class="legend" style="margin-bottom:14px;">
+        <span><span class="sw" style="background:#BA181B;"></span>red border = wrong prediction</span>
+        <span><span class="sw" style="background:#D3D3D3;"></span>grey border = correct prediction</span>
+      </div>
+      <div class="txt-grid">
+        
+    <div class="txt-tile ok">
+      <div class="bio">"Driven product leader passionate about building scalable customer centric experiences that bridge cutting edge tech with real world impact."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Results oriented marketing strategist with a proven track record of delivering data driven solutions that elevate brand storytelling."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Innovative software engineer leveraging cutting edge technologies to architect robust scalable systems for tomorrow&#x27;s challenges."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.47</span>
+        <span class="score">conf 0.53</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Dynamic team leader passionate about empowering cross functional teams to deliver transformative business outcomes."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Strategic thinker dedicated to driving meaningful change through data driven decision making and customer focused innovation."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Forward thinking entrepreneur committed to building sustainable solutions that create real value for stakeholders worldwide."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.52</span>
+        <span class="score">conf 0.52</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Seasoned operations expert leveraging best practices to streamline workflows and unlock organizational efficiency at scale."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Creative storyteller weaving compelling narratives that resonate authentically with diverse global audiences."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.38</span>
+        <span class="score">conf 0.62</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Mission driven leader passionate about fostering inclusive cultures where innovation thrives and individuals flourish."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Data driven product manager passionate about leveraging insights to deliver delightful customer experiences."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.44</span>
+        <span class="score">conf 0.56</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Visionary technologist building the next generation of intelligent platforms that empower users to achieve more."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.59</span>
+        <span class="score">conf 0.59</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Customer obsessed strategist passionate about translating user needs into elegant scalable product solutions."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.38</span>
+        <span class="score">conf 0.62</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Award winning growth marketer leveraging behavioral data to architect campaigns that drive measurable business impact."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Passionate advocate for digital transformation enabling organizations to navigate complex evolving landscapes."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.45</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Curious problem solver leveraging cross functional expertise to deliver elegant solutions to ambiguous challenges."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.45</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Results focused operator passionate about scaling high performing teams that consistently exceed expectations."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Innovative designer committed to crafting intuitive seamless experiences that delight users at every touchpoint."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.41</span>
+        <span class="score">conf 0.59</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Strategic communicator passionate about building authentic brand narratives that foster lasting community engagement."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.38</span>
+        <span class="score">conf 0.62</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Tech forward leader leveraging emerging technologies to architect competitive advantage for forward thinking enterprises."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.47</span>
+        <span class="score">conf 0.53</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Empathetic leader fostering psychologically safe environments where diverse voices contribute meaningfully to outcomes."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Growth focused executive passionate about unlocking untapped potential through data driven strategic initiatives."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Pragmatic technologist committed to shipping robust production grade solutions that scale gracefully under demand."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Customer centric designer obsessed with reducing friction at every step of the user journey."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Mission aligned leader leveraging cross sector experience to drive impact in regulated emerging markets."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.37</span>
+        <span class="score">conf 0.63</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Transformational coach passionate about helping high potential leaders unlock their full strategic capacity."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Insights driven analyst weaving complex datasets into actionable narratives that move the business forward."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Innovative educator leveraging adaptive learning frameworks to deliver personalized outcomes at scale."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.45</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Forward looking strategist passionate about emerging technology and its transformative impact on industries."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Authentic leader committed to building inclusive cultures where individuals feel empowered to do their best work."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.27</span>
+        <span class="score">conf 0.73</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Seasoned advisor bringing together rigorous analysis and creative thinking to solve complex business challenges."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Detail oriented project lead skilled at orchestrating cross functional initiatives from concept to launch."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Adaptive operator passionate about building resilient organizations that thrive amid market uncertainty."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Storytelling specialist crafting authentic narratives that resonate deeply with target audiences globally."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Outcome focused leader passionate about translating vision into measurable execution at every stage."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Lifelong learner curious about the intersection of technology business and human centered design."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.50</span>
+        <span class="score">conf 0.50</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Strategic operator skilled at unlocking growth through disciplined execution and data informed decisions."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Mission focused advocate passionate about leveraging technology to democratize access to opportunity."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Empowering manager dedicated to coaching teams toward sustained high performance and continuous growth."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Innovative researcher passionate about translating cutting edge insights into practical industry applications."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.42</span>
+        <span class="score">conf 0.58</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Trusted advisor known for delivering thoughtful counsel grounded in deep cross sector experience."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.31</span>
+        <span class="score">conf 0.69</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Brand builder committed to crafting compelling visual identities that capture authentic organizational values."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Solution architect passionate about designing elegant systems that balance technical rigor with business agility."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Community focused organizer leveraging grassroots networks to drive sustainable lasting positive change."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Adaptive thinker comfortable navigating ambiguity to surface elegant solutions to complex strategic problems."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.37</span>
+        <span class="score">conf 0.63</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Quality focused engineer dedicated to crafting maintainable code that delivers reliable customer value."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Empathetic facilitator passionate about creating spaces where diverse perspectives drive better outcomes."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Future focused planner skilled at translating strategic priorities into actionable executable roadmaps."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Insights led product strategist leveraging customer research to inform every stage of the development lifecycle."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.51</span>
+        <span class="score">conf 0.51</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Mission driven operator committed to building organizations that scale ethically and sustainably over time."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.39</span>
+        <span class="score">conf 0.61</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Pragmatic builder passionate about shipping useful product to real users and learning from every release."</div>
+      <div class="tile-bar">
+        <span class="badge true ai">ai</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.38</span>
+        <span class="score">conf 0.62</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Born in Mumbai, moved to Bangalore in 2018 for work. Like long walks, bad horror films and my dog Pepper."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Engineering student at NIT Trichy. Writing my thesis on graph neural networks. Coffee keeps me upright."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.32</span>
+        <span class="score">conf 0.68</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Mother of two, runs a small bakery in north Delhi. Specialise in cardamom buns and stubbornly bad jokes."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.42</span>
+        <span class="score">conf 0.58</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Worked at a bank for fourteen years before quitting to teach kids algebra. Best decision I never planned."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.41</span>
+        <span class="score">conf 0.59</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Dad of one chaotic toddler. Software dev by day. Trying to learn Hindi properly after twenty years of half effort."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"I read too much, sleep too little and have opinions about chai temperature. Cardiologist in my real job."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.32</span>
+        <span class="score">conf 0.68</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Marathoner. Vegetarian since college. Argue about cricket with anyone willing. From Pune, currently in Hyderabad."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Schoolteacher in Kerala. Three kids, two cats, one husband. Mostly tired but in a content way."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.40</span>
+        <span class="score">conf 0.60</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Hate writing about myself. Engineer. Boring. Like books and bikes. Currently in Mumbai."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Lived in five countries, three time zones too many. Researcher in computational biology, occasional cook."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.37</span>
+        <span class="score">conf 0.63</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Just here to find good food spots and complain about traffic. From Chennai, work in IT."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Wedding photographer in Goa. Late sleeper, early arguer. Trying to read more this year."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.52</span>
+        <span class="score">conf 0.52</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Lawyer turned baker turned lawyer again. Some days I wonder why. Mostly the pay."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"I run a YouTube channel about local trains. Sounds weird, gets weirder. From Calcutta originally."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.31</span>
+        <span class="score">conf 0.69</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Doctor at a government hospital in Bhopal. Coffee, books, occasional movie. Husband, two kids, one cat."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.36</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Twenty four, just moved to Pune for a new job. Still figuring out the bus routes. Used to be in Delhi."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.31</span>
+        <span class="score">conf 0.69</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Single mom raising two boys and a herb garden. Work as a translator. From Jaipur."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.41</span>
+        <span class="score">conf 0.59</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Retired professor, still grading invisible papers in my head. Birding is the new passion."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.29</span>
+        <span class="score">conf 0.71</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Mechanical engineer in Tata Motors. Like making my own coffee and arguing about football."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.64</span>
+        <span class="score">conf 0.64</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Born in Pakistan, raised in Dubai, settled in Bangalore. Identity crisis is my brand at this point."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.45</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Run a small NGO that helps street kids in Hyderabad. It pays in stories and grey hair."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.54</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Backend developer. Married to a frontend developer. The only fight we have is over CSS."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.32</span>
+        <span class="score">conf 0.68</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Forty one, divorced, currently watching my plants die one by one. Also a tax consultant."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.43</span>
+        <span class="score">conf 0.57</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Civil servant in Lucknow. The work is slow, the food is great, the bureaucracy is eternal."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.65</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Final year architecture student in Ahmedabad. Sleep is for after submissions."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.62</span>
+        <span class="score">conf 0.62</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Used to play tennis competitively. Now I just yell at the TV during matches. Banker in Mumbai."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Doctor by training, novelist by deadline. Currently behind on both."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Two cats, no kids, a husband who travels too much. Translator from Tamil to English."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.37</span>
+        <span class="score">conf 0.63</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Worked offshore on oil rigs for eight years. Now run a fishing boat in Kochi."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.44</span>
+        <span class="score">conf 0.56</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"I take photos of my food and pretend I&#x27;m a food blogger. Day job is accountant."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Born and raised in Shimla. Moved to Bangalore for college, stayed for the weather. Yes really."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Pediatric nurse at a hospital in Delhi. Twelve hour shifts. Like reading historical romance to recover."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.47</span>
+        <span class="score">conf 0.53</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Maths PhD candidate at IIT Madras. Algebraic topology if you must ask. You probably should not."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.45</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Mother of three teenagers. All three are difficult in their own specialised ways. Send help."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.30</span>
+        <span class="score">conf 0.70</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Worked in advertising for ten years before quitting. Now I do nothing very well. Goa."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.72</span>
+        <span class="score">conf 0.72</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Run a small chai stall in Chandigarh that my father opened in 1972. Trying to keep it going."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.43</span>
+        <span class="score">conf 0.57</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Senior citizen, retired teacher, currently learning to play the harmonium. It is going slowly."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.46</span>
+        <span class="score">conf 0.54</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Sound engineer in Bollywood. Bad sleeper, good listener. From Allahabad originally."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.41</span>
+        <span class="score">conf 0.59</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Cook at a small restaurant in Pondicherry. Specialise in Tamil Brahmin food. Mother taught me."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.34</span>
+        <span class="score">conf 0.66</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Used to be a flight attendant. Now I sell handmade soap online. Both have weird hours."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.55</span>
+        <span class="score">conf 0.55</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Aerospace engineer. Single. Boring. I am told repeatedly. Disagree but here we are."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.57</span>
+        <span class="score">conf 0.57</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Architect in Pune. Two daughters, one wife, one obsession with tiling patterns."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.63</span>
+        <span class="score">conf 0.63</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Run a small farm outside Coimbatore. Tomatoes mostly, some millet. My family thinks I am mad."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.29</span>
+        <span class="score">conf 0.71</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Bus conductor in Mysore. Twenty six years on the same route. Could drive it blindfolded."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.31</span>
+        <span class="score">conf 0.69</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"PhD in linguistics. Currently unemployed. Open to suggestions including unrelated to linguistics."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.43</span>
+        <span class="score">conf 0.57</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Software tester. Husband, no kids, two dogs. Live in Noida, hate the air, love the work."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.35</span>
+        <span class="score">conf 0.65</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Civil engineer for the Indian Railways. From a village near Patna. Currently posted in Guwahati."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.47</span>
+        <span class="score">conf 0.53</span>
+      </div>
+    </div>
+    <div class="txt-tile ok">
+      <div class="bio">"Hairdresser in Mumbai for twenty years. I have seen every kind of person and worse hair."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred human">human</span>
+        <span class="score">score 0.51</span>
+        <span class="score">conf 0.51</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"Currently between jobs and pretending it is a sabbatical. Used to do something with marketing."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.33</span>
+        <span class="score">conf 0.67</span>
+      </div>
+    </div>
+    <div class="txt-tile bad">
+      <div class="bio">"I make documentaries no one watches and I am okay with it. Mostly. From Bangalore."</div>
+      <div class="tile-bar">
+        <span class="badge true human">human</span>
+        <span class="arrow">→</span>
+        <span class="badge pred ai">ai</span>
+        <span class="score">score 0.32</span>
+        <span class="score">conf 0.68</span>
+      </div>
+    </div>
+      </div>
+    </section>
+
+    <!-- ========== TAKEAWAYS ========== -->
+    <section class="section">
+      <div class="section-head">
+        <div>
+          <span class="eyebrow">§ 04 · Takeaways</span>
+          <h2>What the numbers say.</h2>
+        </div>
+      </div>
+
+      <div class="takeaway-grid">
+        <div class="takeaway good">
+          <h4>Image side · works as advertised</h4>
+          <p>
+            67.8% accuracy on 59 samples with AUC 0.697. The 64 percent figure
+            we reported in the project deck is reproduced here. The model is more cautious about flagging real photos
+            (72.4% recall) than about catching synthetic ones (63.3% recall).
+            That asymmetry is the correct direction for a verification tool: better to under-flag a fake than to
+            wrongly mark a real user.
+          </p>
+        </div>
+        <div class="takeaway">
+          <h4>Text side · honest failure</h4>
+          <p>
+            57.0% overall accuracy. The detector catches almost every AI-flavoured bio
+            (94.0% recall on AI) but flags 40 of 50 human bios
+            as AI too. AUC of 0.500 confirms the underlying ranking quality is the bottleneck.
+            The RoBERTa detectors were trained on a narrow band of AI text and over-fire on any well-structured English.
+            This is the v2.0 priority.
+          </p>
+        </div>
+        <div class="takeaway">
+          <h4>Latency · acceptable on CPU</h4>
+          <p>
+            Median image latency 19.7 seconds, median text latency
+            13.9 seconds, both end-to-end including the explainability step.
+            For a single-user demo this is comfortably under the 20 second cold start budget.
+            For multi-user deployment we would batch inference and pre-warm the model pool.
+          </p>
+        </div>
+        <div class="takeaway good">
+          <h4>Calibration · the bands work</h4>
+          <p>
+            Score distributions show clear separation between classes on the image side. The fake-band concentration
+            below 0.5 and real-band concentration above is exactly what the trust-band thresholds (0.3 / 0.5 / 0.7)
+            were tuned for. The deck's gauge and Trust Score band logic remain defensible against this empirical data.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Suhani Sidhu · Sumit Kumar Verma · Guide Dr. Akanshi Gupta</span>
+      <span>Amity School of Engineering &amp; Technology · 2025–26</span>
+    </footer>
+  </div>
+
+<script>
+  // Filter chip logic for sample grids
+  document.querySelectorAll('.filters').forEach(group => {
+    const target = document.querySelector(group.dataset.target);
+    if (!target) return;
+    const tiles = Array.from(target.children);
+    group.addEventListener('click', e => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      group.querySelectorAll('button').forEach(b => b.dataset.active = 'false');
+      btn.dataset.active = 'true';
+      const f = btn.dataset.filter;
+      tiles.forEach(t => {
+        const labels = t.querySelectorAll('.badge');
+        const trueLbl = labels[0]?.textContent.trim().toLowerCase();
+        let visible = true;
+        if      (f === 'ok')       visible = t.classList.contains('ok');
+        else if (f === 'bad')      visible = t.classList.contains('bad');
+        else if (f === 'fake-only')  visible = trueLbl === 'fake';
+        else if (f === 'real-only')  visible = trueLbl === 'real';
+        else if (f === 'ai-only')    visible = trueLbl === 'ai';
+        else if (f === 'human-only') visible = trueLbl === 'human';
+        t.style.display = visible ? '' : 'none';
+      });
+    });
+  });
+</script>
+
+</body>
+</html>

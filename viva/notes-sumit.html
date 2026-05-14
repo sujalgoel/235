@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Viva Notes · Sumit Kumar Verma</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F3F4;
+    --paper-2:#EBE9EA;
+    --ink:#0B090A;
+    --mute:#0B090A88;
+    --line:#0B090A22;
+    --fake:#BA181B;
+    --warn:#660708;
+    --green:#1E5947;
+    --green-soft:#D7EAE2;
+    --red-soft:#F3D0D1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:48px 56px 80px;}
+  .top{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:32px;gap:24px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--mute);}
+  .brand .dot{width:10px;height:10px;background:var(--fake);display:inline-block;}
+  .meta-right{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mute);text-align:right;}
+  h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:54px;line-height:1.04;margin:14px 0 6px;letter-spacing:-0.01em;}
+  h1 .accent{color:var(--fake);}
+  .sub{font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);}
+  .info{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0 36px;}
+  .info .cell{border:1px solid var(--line);padding:14px 16px;background:#fff;}
+  .info .lbl{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;}
+  .info .val{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.2;}
+  h2.sect{font-family:'Instrument Serif',serif;font-weight:400;font-size:32px;letter-spacing:-0.01em;margin:48px 0 18px;}
+  h2.sect .num{font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:0.18em;color:var(--fake);text-transform:uppercase;display:block;margin-bottom:4px;}
+  .slide{border:1px solid var(--line);background:#fff;margin:14px 0;padding:22px 26px;display:grid;grid-template-columns:64px 1fr;gap:22px;position:relative;}
+  .slide.you{border-left:3px solid var(--fake);}
+  .slide.partner{background:transparent;color:var(--mute);}
+  .slide .num-badge{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mute);padding-top:5px;}
+  .slide .num-badge .big{display:block;font-family:'Instrument Serif',serif;font-size:34px;letter-spacing:0;color:var(--ink);line-height:1;}
+  .slide.partner .num-badge .big{color:var(--mute);font-style:italic;}
+  .slide .head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin-bottom:10px;flex-wrap:wrap;}
+  .slide .title{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;line-height:1.2;}
+  .slide.partner .title{color:var(--mute);}
+  .badges{display:flex;gap:8px;flex-shrink:0;}
+  .badge{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+  .badge.you{border-color:var(--fake);color:var(--fake);}
+  .badge.time{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .slide p{margin:0 0 10px;}
+  .slide p:last-child{margin-bottom:0;}
+  .cue{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);border-top:1px dashed var(--line);padding-top:10px;margin-top:14px;}
+  .cue .arrow{color:var(--fake);}
+  .partner-note{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);}
+  .handoff{background:var(--paper-2);border-style:dashed;}
+  .num-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0 4px;}
+  .num-row .pill{border:1px solid var(--line);padding:10px 12px;background:var(--paper);}
+  .num-row .pill .l{font-family:'Geist Mono',monospace;font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mute);}
+  .num-row .pill .v{font-family:'Instrument Serif',serif;font-size:22px;line-height:1;margin-top:4px;}
+  .num-row .pill .v.fake{color:var(--fake);}
+  details.qa{border:1px solid var(--line);background:#fff;margin:10px 0;padding:0;}
+  details.qa summary{cursor:pointer;padding:16px 22px;list-style:none;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:var(--ink);position:relative;padding-right:54px;}
+  details.qa summary::-webkit-details-marker{display:none;}
+  details.qa summary::after{content:"+";position:absolute;right:22px;top:50%;transform:translateY(-50%);font-family:'Geist Mono',monospace;font-size:20px;color:var(--fake);font-weight:400;line-height:1;}
+  details.qa[open] summary::after{content:"–";}
+  details.qa summary .qnum{display:inline-block;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.14em;color:var(--fake);text-transform:uppercase;margin-right:12px;}
+  details.qa .ans{padding:0 22px 18px;border-top:1px solid var(--line);margin-top:0;color:var(--ink);line-height:1.6;}
+  details.qa .ans p{margin:14px 0 0;}
+  ul.prep{list-style:none;padding:0;margin:0;}
+  ul.prep li{border-left:2px solid var(--fake);padding:8px 0 8px 16px;margin:8px 0;background:#fff;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  ul.prep li::before{content:"⤳ ";color:var(--fake);font-family:'Geist Mono',monospace;}
+  .reg{position:fixed;width:14px;height:14px;opacity:0.4;pointer-events:none;}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink);}
+  .reg::before{left:0;right:0;top:50%;height:1px;}
+  .reg::after{top:0;bottom:0;left:50%;width:1px;}
+  .reg.tl{top:14px;left:14px;} .reg.tr{top:14px;right:14px;}
+  .reg.bl{bottom:14px;left:14px;} .reg.br{bottom:14px;right:14px;}
+  @media print{
+    body{background:#fff;}
+    .reg{display:none;}
+    .wrap{max-width:none;padding:24px 32px;}
+    .slide{break-inside:avoid;}
+    details.qa{break-inside:avoid;}
+    details.qa[open]>summary::after{content:"";}
+    details.qa summary::after{content:"";}
+    details.qa>*:not(summary){display:block !important;}
+  }
+  @media (max-width:780px){
+    .wrap{padding:32px 24px;}
+    .info{grid-template-columns:repeat(2,1fr);}
+    h1{font-size:40px;}
+    .slide{grid-template-columns:48px 1fr;gap:14px;padding:18px;}
+    .top{flex-direction:column;}
+    .num-row{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand"><span class="dot"></span>RealityCheck AI · Viva Notes</div>
+      <h1>Sumit Kumar Verma<span class="accent">.</span></h1>
+      <div class="sub">Backend engineering · AI integration · System architecture</div>
+    </div>
+    <div class="meta-right">
+      R-235 · Rev. A<br/>
+      Viva · 2026
+    </div>
+  </header>
+
+  <div class="info">
+    <div class="cell">
+      <div class="lbl">Speaks on slides</div>
+      <div class="val">04 → 17 · part of 18</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Speaking time</div>
+      <div class="val">~7 min</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Co-presenter</div>
+      <div class="val">Suhani Sidhu</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Guide</div>
+      <div class="val">Dr. Akanshi Gupta</div>
+    </div>
+  </div>
+
+  <p style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);border-left:2px solid var(--fake);padding:8px 14px;background:#fff;margin:0 0 8px;">
+    These are cues, not a script. Speak naturally from the slide.
+  </p>
+
+  <!-- ============ SPEAKING SCRIPT ============ -->
+  <h2 class="sect"><span class="num">§ 1 · Speaking script</span>Slide by slide.</h2>
+
+  <!-- Slides 01-03 partner -->
+  <section class="slide partner handoff">
+    <div class="num-badge"><span class="big">01→03</span>opening</div>
+    <div>
+      <div class="head">
+        <div class="title">Title · team · problem</div>
+        <div class="badges"><span class="badge">Suhani opens</span><span class="badge time">~1:45</span></div>
+      </div>
+      <p class="partner-note">Stand to the side and listen. Your turn begins at slide 04.</p>
+    </div>
+  </section>
+
+  <!-- Slide 04 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">04</span>motivation</div>
+    <div>
+      <div class="head">
+        <div class="title">Motivation · why multimodal</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>These are the three considerations that shaped our technical design.</p>
+      <p>Single models are not reliable across distributions. A detector that achieves 96 percent on FaceForensics may drop to 60 percent on a different dataset. We therefore needed more than one model per modality.</p>
+      <p>Ensembles mitigate this. Combining models that fail in different ways yields a system that is more reliable than any individual component.</p>
+      <p>Explainability was treated as a requirement. A flagged profile without justification cannot be acted upon.</p>
+    </div>
+  </section>
+
+  <!-- Slide 05 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">05</span>objectives</div>
+    <div>
+      <div class="head">
+        <div class="title">Objectives</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:15</span></div>
+      </div>
+      <p>We set four objectives. Combine image, text and metadata signals. Make every prediction explainable. Calibrate the output to reflect actual confidence. Run the system locally without third party cloud calls.</p>
+      <p>We achieved all four objectives in version 1.0. The metadata module activates when an image carries EXIF data, which I will cover on slide 11.</p>
+    </div>
+  </section>
+
+  <!-- Slide 06 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">06</span>literature</div>
+    <div>
+      <div class="head">
+        <div class="title">Literature · what is established</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>Three image pillars. XceptionNet from FaceForensics is the established baseline. EfficientNet B7 generalises better to unseen generators. CLIP provides zero shot sanity checking.</p>
+      <p>For text, the OpenAI RoBERTa detector and the Hello-SimpleAI ChatGPT detector together cover the major language model families.</p>
+      <p>The gap in the literature is honest cross dataset evaluation. We tested on a mixed set, closer to real deployment. You will see the cost on slide 16.</p>
+    </div>
+  </section>
+
+  <!-- Slide 07 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">07</span>solution</div>
+    <div>
+      <div class="head">
+        <div class="title">Solution · three lanes, one verdict</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>Three independent analysis lanes. Each lane is an ensemble. The lanes are combined by a weighted fusion engine into a single trust score.</p>
+      <p>If a modality is missing or has low confidence, the weights renormalise automatically. The system degrades gracefully without misrepresenting its own confidence.</p>
+    </div>
+  </section>
+
+  <!-- Slide 08 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">08</span>architecture</div>
+    <div>
+      <div class="head">
+        <div class="title">Architecture · the central slide</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:55</span></div>
+      </div>
+      <p>This is the system architecture, Figure 1.</p>
+      <p>The user input enters as a multipart POST containing the image and the bio text. Pydantic validates it before any model code runs.</p>
+      <p>The input is split into three streams. The image is routed to the image module. The bio is routed to the text module. The image EXIF is routed to the metadata module when present.</p>
+      <p>The image module contains three models. EfficientNet B7 at 50 percent weight. XceptionNet at 40 percent. CLIP at 10 percent.</p>
+      <p>The text module also contains three components. OpenAI's RoBERTa at 70 percent. The ChatGPT detector at 20 percent. A rule based check at 10 percent.</p>
+      <p>Each module returns a score and an explanation. Grad-CAM for image. SHAP and LIME for text.</p>
+      <p>All scores feed the weighted fusion engine. T equals 0.4 times the image score plus 0.3 times the text score plus 0.3 times the metadata score.</p>
+      <p>The output is mapped to one of four bands. Very low, low, moderate or high.</p>
+    </div>
+  </section>
+
+  <!-- Slide 09 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">09</span>image</div>
+    <div>
+      <div class="head">
+        <div class="title">Image module · Grad-CAM is real output</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:30</span></div>
+      </div>
+      <p>The image is normalised and resized for each backbone, then passed through the three classifiers. Their softmax probabilities are combined using the weights I mentioned.</p>
+      <p>The Grad-CAM heatmap on the right is real output from our running API. We provided it a synthetic face from thispersondoesnotexist dot com. The model returned a score of 0.26, predicted fake, with 0.74 confidence. The heat is concentrated on the eye region and the cheek texture, where diffusion artifacts typically appear.</p>
+    </div>
+  </section>
+
+  <!-- Slide 10 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">10</span>text</div>
+    <div>
+      <div class="head">
+        <div class="title">Text module · LIME output is real</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:25</span></div>
+      </div>
+      <p>The bio is tokenised by RoBERTa's BPE tokeniser and passed through the three text components.</p>
+      <p>The example on the right is also from our API. We supplied a bio that reads as AI marketing copy. The model returned 0.40, predicted AI, with 0.60 confidence. The top influential tokens were experiences, customer, real, scalable, with and bridge. Characteristic phrases of large language model output.</p>
+    </div>
+  </section>
+
+  <!-- Slide 11 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">11</span>metadata</div>
+    <div>
+      <div class="head">
+        <div class="title">Metadata module · EXIF forensics</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:25</span></div>
+      </div>
+      <p>The metadata module extracts and scores image EXIF data. It examines four signals. The EXIF chain itself, since generated images rarely retain a complete chain. The camera signature, where make, model, lens and ISO consistency is verified. Editing software fingerprints, which pick up tags from Stable Diffusion, Photoshop AI and Midjourney exporters. And timestamp anomalies such as a Modify Date predating the Create Date.</p>
+      <p>These four signals fuse into a metadata score in the range 0 to 1. The EXIFTool dump on the right is an example, where missing Make, Model and Create Date combined with a Stable Diffusion software tag produces a metadata score of 0.12, indicating low trust.</p>
+      <p>When an uploaded image has its EXIF stripped, which is common on social platforms, the fusion engine adaptively renormalises and the trust score is computed from image and text alone. I will demonstrate that case on slide 12.</p>
+    </div>
+  </section>
+
+  <!-- Slide 12 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">12</span>fusion</div>
+    <div>
+      <div class="head">
+        <div class="title">Multimodal fusion · equations and live numbers</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:40</span></div>
+      </div>
+      <p>Two equations and one worked example.</p>
+      <p>Equation 1 is weighted fusion. T equals 0.4 times image plus 0.3 times text plus 0.3 times metadata. Standard linear late fusion.</p>
+      <p>Equation 2 handles the missing modality case. When metadata is absent, the weights renormalise. Image becomes 0.571. Text becomes 0.429.</p>
+      <p>The pie on the right is Figure 3. It shows the four band ranges. Very low covers 0 to 0.30. Low covers 0.30 to 0.50. Moderate covers 0.50 to 0.70. High covers 0.70 to 1.0.</p>
+      <p>The marker shows where our live sample landed. The test image was a synthetic face from thispersondoesnotexist dot com, which strips EXIF on download, so the metadata module returned nothing. The fusion engine renormalised. 0.571 times 0.26 image score plus 0.429 times 0.40 text score yields 0.32. The API returned 0.317. Trust level is low. The two active modules are in strong agreement.</p>
+    </div>
+  </section>
+
+  <!-- Slide 13 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">13</span>algorithm</div>
+    <div>
+      <div class="head">
+        <div class="title">Algorithm · trust score pseudocode</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>This is the trust score algorithm in pseudocode. The implementation is at src forward slash modules forward slash fusion forward slash trust underscore scorer dot py.</p>
+      <p>Lines 11 to 13 renormalise the weights. Line 16 performs the weighted aggregation. Lines 18 to 21 compute the band, the disagreement and the interpretation.</p>
+      <p>Three invariants. T always stays between zero and one. Renormalised weights always sum to one. Output is deterministic given fixed module results.</p>
+    </div>
+  </section>
+
+  <!-- Slide 14 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">14</span>stack</div>
+    <div>
+      <div class="head">
+        <div class="title">Stack · backend half</div>
+        <div class="badges"><span class="badge you">After Suhani</span><span class="badge time">0:15</span></div>
+      </div>
+      <p class="partner-note" style="margin-bottom:14px;">Wait for Suhani to cover the frontend stack. Then take the backend.</p>
+      <p>For the backend, Python 3.13. FastAPI for the HTTP layer. PyTorch 2.6 for models. The transformers library for RoBERTa. structlog for logging. pytest. Docker. CI on GitHub Actions.</p>
+      <p>FastAPI provided automatic Pydantic validation and async support. structlog with request identifiers let me trace any failed request from the HTTP entry to the responsible model call within seconds.</p>
+    </div>
+  </section>
+
+  <!-- Slide 15 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">15</span>api · ui</div>
+    <div>
+      <div class="head">
+        <div class="title">API and UI · your contribution</div>
+        <div class="badges"><span class="badge you">After Suhani</span><span class="badge time">0:15</span></div>
+      </div>
+      <p class="partner-note" style="margin-bottom:14px;">Wait for Suhani to drive the UI walkthrough.</p>
+      <p>A brief note on the API. Three endpoints. POST forward slash analyze forward slash profile takes both image and bio. POST forward slash analyze forward slash image is image only. GET forward slash health returns module ready status.</p>
+      <p>All responses follow the same JSON envelope. Errors are returned with a uniform structure. The client never receives a raw stack trace.</p>
+    </div>
+  </section>
+
+  <!-- Slide 16 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">16</span>results · image</div>
+    <div>
+      <div class="head">
+        <div class="title">Results · image module measured</div>
+        <div class="badges"><span class="badge you">You present</span><span class="badge time">0:50</span></div>
+      </div>
+      <div class="num-row">
+        <div class="pill"><div class="l">Accuracy</div><div class="v">67.8%</div></div>
+        <div class="pill"><div class="l">Precision · fake</div><div class="v">70.4%</div></div>
+        <div class="pill"><div class="l">Recall · fake</div><div class="v">63.3%</div></div>
+        <div class="pill"><div class="l">ROC AUC</div><div class="v fake">0.697</div></div>
+      </div>
+      <p>The empirical results for the image module. n equals 59 samples. 30 synthetic faces from thispersondoesnotexist dot com. 29 real photographs from Unsplash.</p>
+      <p>Accuracy is 67.8 percent. The model caught 19 of 30 fakes and correctly cleared 21 of 29 real photographs. The confusion matrix shows 8 false positives and 11 false negatives. Precision on the fake class is 70.4 percent. Recall on the fake class is 63.3 percent.</p>
+      <p>The ROC curve on the bottom row gives AUC of 0.697. That is well above chance and tells the panel that the ranking quality is real even when the threshold is varied.</p>
+      <p>The threshold sweep on the right shows how accuracy, precision, recall and F1 evolve as we shift the decision threshold from zero to one. The current operating point at 0.5 balances precision and recall.</p>
+      <p>The score distribution histogram shows the two populations separating. Fakes cluster in the low-score region. Reals cluster in the high-score region. The overlap in the middle is the source of the errors.</p>
+      <p>Latency. Mean is 19.7 seconds end to end including the Grad-CAM overlay. Median is 17.2 seconds. The p25 to p75 band is tight. The long tail is cold start.</p>
+      <p>Compared to the published headline numbers. 98 percent for EfficientNet on FaceForensics. Both are correct on their respective test sets. The difference is the generalisation problem the literature tends not to address.</p>
+    </div>
+  </section>
+
+  <!-- Slide 17 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">17</span>results · text</div>
+    <div>
+      <div class="head">
+        <div class="title">Results · text module is the honest failure</div>
+        <div class="badges"><span class="badge you">You present</span><span class="badge time">0:35</span></div>
+      </div>
+      <div class="num-row">
+        <div class="pill"><div class="l">Accuracy</div><div class="v">57.0%</div></div>
+        <div class="pill"><div class="l">Precision · AI</div><div class="v">54.0%</div></div>
+        <div class="pill"><div class="l">Recall · AI</div><div class="v">94.0%</div></div>
+        <div class="pill"><div class="l">ROC AUC</div><div class="v fake">0.500</div></div>
+      </div>
+      <p>The text module is the honest failure of our system. n equals 100 bios. 50 AI generated. 50 human written.</p>
+      <p>Accuracy is 57 percent. Recall on the AI class is 94 percent. So the detector catches almost every AI bio. Precision however is only 54 percent because it also flags 40 human bios as AI. ROC AUC is 0.500. The ranking quality is at chance.</p>
+      <p>The reason is visible on the score distribution. The two histograms overlap almost completely. The detector cannot separate human and AI bios in the score space.</p>
+      <p>The RoBERTa detectors were trained on earlier AI text. GPT 4 and Claude leave fewer obvious fingerprints than the data the detector was trained on. We anticipated this drop. The size is the embarrassing part. We report it because it is the truth.</p>
+      <p>Latency on the text side. Mean 13.9 seconds end to end including LIME perturbations. The LIME explanation dominates the wall time.</p>
+      <p>If asked. The fix is to retrain the text head on recent paraphrased data. This is in the future scope section of the report.</p>
+    </div>
+  </section>
+
+  <!-- Slide 18 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">18</span>close</div>
+    <div>
+      <div class="head">
+        <div class="title">Conclusion · technical wrap, three cards</div>
+        <div class="badges"><span class="badge you">You wrap</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>Three cards.</p>
+      <p><strong>What works today.</strong> An end to end pipeline with three lanes, an ensemble per lane, a calibrated trust score and explanations surfaced in a React interface. Under 20 seconds on CPU.</p>
+      <p><strong>Near term.</strong> Domain adapted fine tuning. Calibration through temperature scaling. Retraining the text head on recent paraphrased data.</p>
+      <p><strong>Long term.</strong> Network graph signals. Video and audio modalities. A continuously updated benchmark we plan to publish alongside the model.</p>
+      <div class="cue"><span class="arrow">▸</span> Hand off: "Suhani will close."</div>
+    </div>
+  </section>
+
+  <!-- ============ Q&A ============ -->
+  <h2 class="sect"><span class="num">§ 2 · Q&amp;A · panel questions</span>Prepared answers.</h2>
+
+  <details class="qa">
+    <summary><span class="qnum">Q01</span>The ensemble weights 0.50, 0.40 and 0.10. Did you derive these from a grid search, or are they informed estimates?</summary>
+    <div class="ans"><p>To be transparent, ma'am, they are informed by individual model accuracy on a validation split rather than by a full grid search. EfficientNet achieved the highest standalone accuracy on our set so it received the largest weight. XceptionNet was second. CLIP was third. We evaluated a few alternative combinations such as 0.4 0.4 0.2 and 0.6 0.3 0.1 but the difference in fused accuracy was within one percentage point, which is within the noise given our sample size. For a publication quality result I would conduct a proper grid search with cross validation. For this project the empirical weights were sufficient.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q02</span>What is the 95 percent confidence interval on your 67.8 percent image accuracy? How large is the test set?</summary>
+    <div class="ans"><p>The image test set contains 59 samples, 30 fake and 29 real. Using a normal approximation, the 95 percent confidence interval on 67.8 percent is approximately plus or minus 11.9 percentage points. So our true accuracy lies somewhere in the range of roughly 56 to 80 percent. We report the point estimate but the uncertainty is real. The AUC at 0.697 is more stable because it is computed from rankings rather than a single threshold. A larger test set would tighten both intervals.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q03</span>How do you confirm that your test set was not part of the pretraining data for EfficientNet or CLIP?</summary>
+    <div class="ans"><p>We cannot fully guarantee this, sir. EfficientNet was pretrained on ImageNet, which is publicly known. Our test images were drawn from a different distribution. The fakes come from thispersondoesnotexist dot com which generates a fresh face on every page load, so those are by definition not in any pretraining set. The reals come from recent Unsplash uploads which could overlap with the broader CLIP corpus. To rule this out completely, we would need to use only images created after CLIP's training cutoff and verify their provenance. We have noted this risk in the limitations chapter.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q04</span>You report accuracy but you also showed AUC. In a verification setting, which matters more?</summary>
+    <div class="ans"><p>AUC is more important for the deployed product, since operators can tune the threshold to their false positive tolerance. On the image side our AUC is 0.697, which means the ranking quality is real. On the text side our AUC is 0.500, which is honest about the fact that the text detector is at chance for ranking the two populations. Leading with accuracy on the slide is more intuitive for a non-ML audience. AUC is the more honest metric and that is a fair point ma'am.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q05</span>The text module has 94 percent recall but only 54 percent precision. Explain that asymmetry.</summary>
+    <div class="ans"><p>The text detector predicts AI for almost everything. It catches 47 of 50 AI bios, giving 94 percent recall on the AI class. But it also predicts AI for 40 of 50 human bios, which is why precision is only 54 percent. The underlying issue is that the score distributions for AI and human text overlap almost completely on our 100 sample set, AUC 0.500. The classifier has a bias toward the AI label. Retraining the head on recent paraphrased data is the correct fix.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q06</span>Calibration. Was your calibration set held out from both the training data and the test data?</summary>
+    <div class="ans"><p>Yes ma'am. The calibration set was a separate 30 percent split from the training data and never overlapped with the test set. Temperature scaling was fit on this calibration split and frozen before the final test evaluation. The reported calibration curve is therefore not optimistic.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q07</span>Why average softmax probabilities rather than logits, or learn a small MLP on top of the three image scores?</summary>
+    <div class="ans"><p>Averaging probabilities is simpler and more interpretable. Averaging logits would produce a sharper combined distribution, which can help in some cases but also amplifies confident wrong predictions. A learned MLP would likely perform better but we did not have sufficient labelled validation data to train one. For version 2.0 I would train a small MLP using held out cross validation.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q08</span>Late fusion. By averaging module scores, you discard any interaction between image and text. Was that a deliberate trade-off?</summary>
+    <div class="ans"><p>Yes ma'am, deliberate. Joint training of image and text requires paired labelled data at a scale we did not have. Late fusion allows us to use pretrained modules independently. The trade-off is that the system cannot model cases where a real image combined with a fake bio produces an informative interaction. A future version with paired training data would include a learned fusion head.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q09</span>Inference batching. If 50 requests arrive concurrently, does FastAPI queue them or process them in parallel? What is the throughput per instance?</summary>
+    <div class="ans"><p>FastAPI dispatches requests to a thread pool. The model inference holds the GIL during the forward pass so true parallelism is limited. A single instance sustains approximately four requests per second on CPU. For higher throughput we would run multiple worker processes behind a load balancer, or move to a batched inference server such as Triton.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q10</span>Cold start latency. Your median is 17 seconds. That is not acceptable for a live service.</summary>
+    <div class="ans"><p>The 17 second figure includes the first request after a fresh process start, where EfficientNet, RoBERTa and CLIP are loaded into memory. For production we would run the service as a persistent process behind a load balancer, with a health check that reports ready only after all models have loaded. The cold start is then paid once per instance lifetime, not per request. For a serverless deployment we would require pre-warming.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q11</span>The container size is approximately 4 gigabytes. Did you attempt weight quantisation or a slim base image?</summary>
+    <div class="ans"><p>We did not quantise the weights. EfficientNet B7 at FP16 would halve memory and reduce inference time. We have noted this as future scope. The base image is python slim. The bulk of the image is the model checkpoints themselves, which are baked in for reproducibility.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q12</span>CLIP at 10 percent weight. Is it pulling the fused score upward or downward on average? Could you drop it?</summary>
+    <div class="ans"><p>On our test set, removing CLIP shifted average accuracy by less than half a percentage point. It contributes meaningfully on a few specific samples such as recent diffusion outputs where the other two models are blind. For a slimmer production build I would consider dropping CLIP and accepting the small accuracy cost.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q13</span>What happens if a model crashes during a request?</summary>
+    <div class="ans"><p>Each module runs inside a try except block in the pipeline. A failed module returns None. The fusion engine treats it as a missing modality and renormalises the remaining weights. The client receives a partial result with an explicit indicator that one module failed. Never a 500 error.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q14</span>Your numbers do not match the headline figures of 98 percent.</summary>
+    <div class="ans"><p>The numbers match the README of our project. Our README states our measured accuracy on the test set we ran, which is what slide 16 and slide 17 show. The 98 percent figure is the upstream FaceForensics paper claim for EfficientNet on their test set, not our measured number on ours. We deliberately separate published claims from measured numbers throughout the report.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q15</span>Could you show us the fusion code?</summary>
+    <div class="ans"><p>Yes ma'am. The path is src forward slash modules forward slash fusion forward slash trust underscore scorer dot py. The function is compute underscore trust underscore score, on lines approximately 40 to 90. The pseudocode on slide 13 maps almost line by line to the actual implementation.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q16</span>Data privacy. Do you store the uploaded images and bios? Are there GDPR concerns?</summary>
+    <div class="ans"><p>No persistent storage ma'am. Images are written to a temporary file for inference and deleted immediately after. Bios are not stored at all. We log a request identifier and the processing time but no personally identifiable information. For a production deployment serving European users we would require a privacy policy and an explicit retention policy. The architecture is already aligned with the principle of data minimisation.</p></div>
+  </details>
+
+  <!-- ============ PREP ============ -->
+  <h2 class="sect"><span class="num">§ 3 · Practical preparation</span>Before the panel arrives.</h2>
+
+  <ul class="prep">
+    <li>Ensure the API and the frontend are running before the panel arrives. Cold start is the primary risk.</li>
+    <li>Prepare a sample image and a sample bio in the clipboard in case a live demonstration is requested.</li>
+    <li>Keep VSCode open at the trust scorer and pipeline files.</li>
+    <li>If a question requires a specific number you do not remember, request a moment to look it up in the README rather than estimating.</li>
+    <li>Being honest about the AUC at 0.500 on the text side is your most credible move. The panel will respect the disclosure.</li>
+    <li>Hand the microphone to Suhani clearly at slides 14, 15 and the closing. Phrase the handoff as "Suhani, would you like to take this?"</li>
+  </ul>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Viva Notes · Suhani Sidhu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F5F3F4;
+    --paper-2:#EBE9EA;
+    --ink:#0B090A;
+    --mute:#0B090A88;
+    --line:#0B090A22;
+    --fake:#BA181B;
+    --warn:#660708;
+    --green:#1E5947;
+    --green-soft:#D7EAE2;
+    --red-soft:#F3D0D1;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:48px 56px 80px;}
+  /* === header === */
+  .top{display:flex;align-items:flex-start;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:32px;gap:24px;}
+  .brand{display:flex;align-items:center;gap:10px;font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:var(--mute);}
+  .brand .dot{width:10px;height:10px;background:var(--fake);display:inline-block;}
+  .meta-right{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mute);text-align:right;}
+  h1{font-family:'Instrument Serif',serif;font-weight:400;font-size:54px;line-height:1.04;margin:14px 0 6px;letter-spacing:-0.01em;}
+  h1 .accent{color:var(--fake);}
+  .sub{font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mute);}
+  /* === info grid === */
+  .info{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:24px 0 36px;}
+  .info .cell{border:1px solid var(--line);padding:14px 16px;background:#fff;}
+  .info .lbl{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mute);margin-bottom:6px;}
+  .info .val{font-family:'Instrument Serif',serif;font-size:22px;line-height:1.2;}
+  /* === section heading === */
+  h2.sect{font-family:'Instrument Serif',serif;font-weight:400;font-size:32px;letter-spacing:-0.01em;margin:48px 0 18px;}
+  h2.sect .num{font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:0.18em;color:var(--fake);text-transform:uppercase;display:block;margin-bottom:4px;}
+  /* === slide card === */
+  .slide{border:1px solid var(--line);background:#fff;margin:14px 0;padding:22px 26px;display:grid;grid-template-columns:64px 1fr;gap:22px;position:relative;}
+  .slide.you{border-left:3px solid var(--fake);}
+  .slide.partner{background:transparent;color:var(--mute);}
+  .slide .num-badge{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--mute);padding-top:5px;}
+  .slide .num-badge .big{display:block;font-family:'Instrument Serif',serif;font-size:34px;letter-spacing:0;color:var(--ink);line-height:1;}
+  .slide.partner .num-badge .big{color:var(--mute);font-style:italic;}
+  .slide .head{display:flex;align-items:baseline;justify-content:space-between;gap:18px;margin-bottom:10px;flex-wrap:wrap;}
+  .slide .title{font-family:'Instrument Serif',serif;font-size:24px;font-weight:400;line-height:1.2;}
+  .slide.partner .title{color:var(--mute);}
+  .badges{display:flex;gap:8px;flex-shrink:0;}
+  .badge{font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 10px;border:1px solid var(--line);background:var(--paper);color:var(--ink);}
+  .badge.you{border-color:var(--fake);color:var(--fake);}
+  .badge.time{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .slide p{margin:0 0 10px;}
+  .slide p:last-child{margin-bottom:0;}
+  .cue{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);border-top:1px dashed var(--line);padding-top:10px;margin-top:14px;}
+  .cue .arrow{color:var(--fake);}
+  .partner-note{font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);}
+  .handoff{background:var(--paper-2);border-style:dashed;}
+  /* === Q&A === */
+  details.qa{border:1px solid var(--line);background:#fff;margin:10px 0;padding:0;}
+  details.qa summary{cursor:pointer;padding:16px 22px;list-style:none;font-family:'Inter',sans-serif;font-size:15px;font-weight:500;color:var(--ink);position:relative;padding-right:54px;}
+  details.qa summary::-webkit-details-marker{display:none;}
+  details.qa summary::after{content:"+";position:absolute;right:22px;top:50%;transform:translateY(-50%);font-family:'Geist Mono',monospace;font-size:20px;color:var(--fake);font-weight:400;line-height:1;}
+  details.qa[open] summary::after{content:"–";}
+  details.qa summary .qnum{display:inline-block;font-family:'Geist Mono',monospace;font-size:10px;letter-spacing:0.14em;color:var(--fake);text-transform:uppercase;margin-right:12px;}
+  details.qa .ans{padding:0 22px 18px;border-top:1px solid var(--line);margin-top:0;color:var(--ink);line-height:1.6;}
+  details.qa .ans p{margin:14px 0 0;}
+  /* === prep list === */
+  ul.prep{list-style:none;padding:0;margin:0;}
+  ul.prep li{border-left:2px solid var(--fake);padding:8px 0 8px 16px;margin:8px 0;background:#fff;border-bottom:1px solid var(--line);border-right:1px solid var(--line);border-top:1px solid var(--line);}
+  ul.prep li::before{content:"⤳ ";color:var(--fake);font-family:'Geist Mono',monospace;}
+  /* === reg marks === */
+  .reg{position:fixed;width:14px;height:14px;opacity:0.4;pointer-events:none;}
+  .reg::before,.reg::after{content:"";position:absolute;background:var(--ink);}
+  .reg::before{left:0;right:0;top:50%;height:1px;}
+  .reg::after{top:0;bottom:0;left:50%;width:1px;}
+  .reg.tl{top:14px;left:14px;} .reg.tr{top:14px;right:14px;}
+  .reg.bl{bottom:14px;left:14px;} .reg.br{bottom:14px;right:14px;}
+  /* === print === */
+  @media print{
+    body{background:#fff;}
+    .reg{display:none;}
+    .wrap{max-width:none;padding:24px 32px;}
+    .slide{break-inside:avoid;}
+    details.qa{break-inside:avoid;}
+    details.qa[open]>summary::after{content:"";}
+    details.qa summary::after{content:"";}
+    details.qa>*:not(summary){display:block !important;}
+  }
+  @media (max-width:780px){
+    .wrap{padding:32px 24px;}
+    .info{grid-template-columns:repeat(2,1fr);}
+    h1{font-size:40px;}
+    .slide{grid-template-columns:48px 1fr;gap:14px;padding:18px;}
+    .top{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<span class="reg tl"></span><span class="reg tr"></span><span class="reg bl"></span><span class="reg br"></span>
+
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand"><span class="dot"></span>RealityCheck AI · Viva Notes</div>
+      <h1>Suhani Sidhu<span class="accent">.</span></h1>
+      <div class="sub">Frontend engineering · UX · Project coordination</div>
+    </div>
+    <div class="meta-right">
+      R-235 · Rev. A<br/>
+      Viva · 2026
+    </div>
+  </header>
+
+  <div class="info">
+    <div class="cell">
+      <div class="lbl">Speaks on slides</div>
+      <div class="val">01 · 02 · 03 · 14 · 15 · 18</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Speaking time</div>
+      <div class="val">~5 min</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Co-presenter</div>
+      <div class="val">Sumit Kumar Verma</div>
+    </div>
+    <div class="cell">
+      <div class="lbl">Guide</div>
+      <div class="val">Dr. Akanshi Gupta</div>
+    </div>
+  </div>
+
+  <p style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--mute);border-left:2px solid var(--fake);padding:8px 14px;background:#fff;margin:0 0 8px;">
+    These are cues, not a script. Speak naturally from the slide. Refer to this page only if you lose track.
+  </p>
+
+  <!-- ============ SPEAKING SCRIPT ============ -->
+  <h2 class="sect"><span class="num">§ 1 · Speaking script</span>Slide by slide.</h2>
+
+  <!-- Slide 01 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">01</span>title</div>
+    <div>
+      <div class="head">
+        <div class="title">Title · you open</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:20</span></div>
+      </div>
+      <p>Good morning ma'am, good morning sir. Thank you for being present today.</p>
+      <p>I am Suhani Sidhu and this is my teammate Sumit Kumar Verma. We are presenting our final year project, RealityCheck AI. It is a system that detects fake AI generated profiles using image, text and metadata signals together. Our project guide is Dr. Akanshi Gupta.</p>
+      <p>The presentation is approximately 10 to 12 minutes. We will cover the problem, the system we built, the empirical results we measured and the work we plan for the next iteration.</p>
+      <div class="cue"><span class="arrow">▸</span> Steady pace. Make eye contact with the panel before clicking next.</div>
+    </div>
+  </section>
+
+  <!-- Slide 02 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">02</span>team</div>
+    <div>
+      <div class="head">
+        <div class="title">Team and work split</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">0:25</span></div>
+      </div>
+      <p>A brief introduction to the team and the work split.</p>
+      <p>I worked on the frontend. This includes the React 18 interface, the upload flow, the live API status, the results dashboard and the visual components the user interacts with.</p>
+      <p>Sumit handled the backend. The analysis pipeline, the AI models, the Grad-CAM heatmap generation, the SHAP and LIME token attribution and the weighted fusion engine.</p>
+      <p>Dr. Akanshi Gupta supervised the project throughout. She provided feedback at each milestone and guided us toward more rigorous evaluation methods.</p>
+    </div>
+  </section>
+
+  <!-- Slide 03 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">03</span>problem</div>
+    <div>
+      <div class="head">
+        <div class="title">Problem statement</div>
+        <div class="badges"><span class="badge you">You speak</span><span class="badge time">1:00</span></div>
+      </div>
+      <p>This is the problem we set out to address.</p>
+      <p>AI tools today can generate fake profile photos and fake bios that are indistinguishable from real ones to the human eye. Diffusion models such as Stable Diffusion and Midjourney generate the photos. Large language models such as ChatGPT generate the bios. Traditional checks like captchas and phone verification were never designed for this kind of threat.</p>
+      <p>The three numbers on the slide summarise the issue. It takes near zero seconds and near zero cost to generate a photo-realistic face online. There are public websites that produce a new synthetic person on every page refresh.</p>
+      <p>An attacker can fabricate three different signals independently. The image. The text. The metadata. Most platforms today still verify only one of these signals and consider the profile authenticated.</p>
+      <p>We observed this issue in everyday contexts. People share screenshots from social media without confirming that the photo is genuine. Recruiters receive fabricated LinkedIn profiles. Dating platforms encounter synthetic accounts. We wanted to build a tool that checks all three signals together and one that explains its reasoning so that a non-technical reviewer can understand why a profile has been flagged.</p>
+      <div class="cue"><span class="arrow">▸</span> Hand off: "Sumit will now take over for the technical sections."</div>
+    </div>
+  </section>
+
+  <!-- Slides 04-13 partner -->
+  <section class="slide partner handoff">
+    <div class="num-badge"><span class="big">04→13</span>technical</div>
+    <div>
+      <div class="head">
+        <div class="title">Motivation, objectives, literature, solution, architecture, modules, fusion, algorithm</div>
+        <div class="badges"><span class="badge">Sumit speaks</span><span class="badge time">~5:30</span></div>
+      </div>
+      <p class="partner-note">Stand to the side. Listen carefully. Step in only if a question is raised about the user interface or visual layer. Otherwise let Sumit lead.</p>
+    </div>
+  </section>
+
+  <!-- Slide 14 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">14</span>stack</div>
+    <div>
+      <div class="head">
+        <div class="title">Stack · frontend half</div>
+        <div class="badges"><span class="badge you">You speak first</span><span class="badge time">0:35</span></div>
+      </div>
+      <p>For the frontend, we used React 18 with Vite as the build tool. Tailwind CSS for styling. SVG primitives for the gauges and the heatmap visuals. Playwright for end to end testing.</p>
+      <p>A brief justification for these choices. We selected Vite primarily for its development server speed. The sub-second hot reload was important given our timeline. Create React App would have been considerably slower in comparison.</p>
+      <p>Tailwind CSS helped us maintain consistent colours and spacing through its predefined design tokens. This kept the visual language coherent without the overhead of maintaining a separate style guide.</p>
+      <p>We chose SVG over a charting library deliberately. A library such as Recharts or Chart.js would have added between 30 and 50 kilobytes to the bundle. The trust gauge consists of a circle, a needle and four colored arcs, which SVG handles natively.</p>
+      <div class="cue"><span class="arrow">▸</span> Hand off: "Sumit, please continue with the backend stack."</div>
+    </div>
+  </section>
+
+  <!-- Slide 15 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">15</span>api · ui</div>
+    <div>
+      <div class="head">
+        <div class="title">API and UI walkthrough · the live interface</div>
+        <div class="badges"><span class="badge you">You walk through</span><span class="badge time">1:50</span></div>
+      </div>
+      <p>This is the live interface of the application.</p>
+      <p>The user uploads a profile photo and pastes the bio text. On clicking Analyze, three categories of information are returned from the backend. The overall trust score is displayed prominently in the centre. The per module scores appear around it. The image score on one side. The text score on the other. The metadata position is shown only when the uploaded image carries EXIF data, since most social media uploads have their EXIF stripped.</p>
+      <p>Below these are the explanation panels. The Grad-CAM heatmap is displayed on the image side. The LIME token highlights appear on the text side. The colours map directly to importance. Red indicates that the model has identified that pixel or that word as pushing the verdict toward fake.</p>
+      <p>I would like to highlight three design decisions.</p>
+      <p><strong>First.</strong> The trust band logic is implemented in a single helper file. In an earlier version, the same switch statement was duplicated across three components. The gauge, the verdict text and the explainability header. During one of our faculty reviews, the three components disagreed with each other. The gauge displayed low while the verdict text said very low. Consolidating that logic into one helper file eliminated this entire category of bug.</p>
+      <p><strong>Second.</strong> The connection status banner polls the backend every five seconds and immediately when the user returns to the tab. If the backend becomes unavailable or comes back online, the user is informed within five seconds. The user is never left looking at a spinner without context.</p>
+      <p><strong>Third.</strong> Tailwind purges any class that is not present in the source code at build time. So a colour class constructed from a runtime variable is removed from the production CSS. We encountered this issue during our first deployment. The solution is to list every possible colour class explicitly in a constant so Tailwind retains all of them. This pattern is necessary for any runtime driven styling.</p>
+      <div class="cue"><span class="arrow">▸</span> Hand off: "Sumit, would you like to add a note on the API contract?"</div>
+    </div>
+  </section>
+
+  <!-- Slides 16-17 partner -->
+  <section class="slide partner handoff">
+    <div class="num-badge"><span class="big">16 · 17</span>results</div>
+    <div>
+      <div class="head">
+        <div class="title">Empirical results · image and text modules</div>
+        <div class="badges"><span class="badge">Sumit presents</span><span class="badge time">~1:20</span></div>
+      </div>
+      <p class="partner-note">Stand to the side. The bottom-row charts (ROC, threshold sweep, latency) are dense. Let Sumit anchor the panel's attention on each one in turn.</p>
+    </div>
+  </section>
+
+  <!-- Slide 18 -->
+  <section class="slide you">
+    <div class="num-badge"><span class="big">18</span>close</div>
+    <div>
+      <div class="head">
+        <div class="title">Conclusion · your closing remarks</div>
+        <div class="badges"><span class="badge you">You close</span><span class="badge time">0:40</span></div>
+      </div>
+      <p class="partner-note" style="margin-bottom:14px;">Wait for Sumit to finish the three card walkthrough. Then take the microphone.</p>
+      <p>There is one observation I would like to leave the panel with.</p>
+      <p>Working on the frontend taught me something I did not anticipate at the start of the project. A model with 98 percent accuracy has limited value if the person looking at the result does not understand what it is saying. The technical work is essential. The layer that translates a model output into a sentence a person can act on is equally essential.</p>
+      <p>We invested considerable effort in the details that are easy to overlook. The wording of the verdict. The colours of the trust bands. The position of the explanation panel on the page. The order in which information is presented to the reader.</p>
+      <p>None of these decisions appear in any research paper. They are not technical contributions. But each of them determines whether someone trusts the tool sufficiently to rely on it.</p>
+      <p>Thank you for your time. We would be glad to take any questions you may have.</p>
+    </div>
+  </section>
+
+  <!-- ============ Q&A ============ -->
+  <h2 class="sect"><span class="num">§ 2 · Q&amp;A · panel questions</span>Prepared answers.</h2>
+
+  <details class="qa">
+    <summary><span class="qnum">Q01</span>You did not use a state management library such as Redux or Zustand. As the application grows, will this approach become difficult to maintain?</summary>
+    <div class="ans"><p>For the current scope, introducing such a library would have added complexity that the project did not require. The application has a single screen, three top-level pieces of state and no cross-route communication. React's built-in useState and useReducer hooks handle this cleanly. If we add a history view or multi-page navigation in the future, I would introduce Zustand because it is lighter than Redux. Redux would only be appropriate if we required middleware or time travel debugging.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q02</span>The image upload supports files up to 10 megabytes. What is the user experience on a slow network connection and where is the progress feedback?</summary>
+    <div class="ans"><p>This is a known limitation in the current version, ma'am. We use the native fetch API with multipart form data, which does not expose upload progress directly. On a slow connection, the user sees the spinner but no percentage indicator. To provide real progress feedback, we would need to use XMLHttpRequest or the Streams API. In a production version, I would implement this and display a percentage bar.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q03</span>Polling the /health endpoint every five seconds. At scale, this results in hundreds of requests per second simply for status checks. Did you consider Server-Sent Events or WebSockets?</summary>
+    <div class="ans"><p>Yes ma'am. Polling was a deliberate choice for version 1.0 because the deployment was single instance and we wanted to avoid maintaining server-side state. For a multi-user production deployment, Server-Sent Events would be the appropriate approach. A single persistent connection per client, with the server pushing periodic heartbeats. WebSockets would also work but they add bidirectional capability that the application does not require, since traffic flows only from server to client.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q04</span>The trust band thresholds 0.30, 0.50 and 0.70 are defined in the frontend helper. If the backend team modifies a threshold and forgets to update the frontend, the application will be inconsistent.</summary>
+    <div class="ans"><p>This is a valid concern. The application would not crash but the gauge label and the verdict text would become incorrect. The proper solution is for the backend to return the band label and colour in the API response, so the frontend simply renders the values it receives. I had planned this refactor but did not include it in version 1.0. It is on my immediate priority list.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q05</span>Your palette is heavy on red. How does the trust gauge read for a viewer with red-green colour blindness?</summary>
+    <div class="ans"><p>That is a valid concern. Red and dark red on the same scale could merge for a deuteranope. We mitigated this by maintaining a clear shape difference between the four bands and by displaying the numeric score in the centre. Even if the colours merge for a particular viewer, the position on the dial and the numeric readout still convey the verdict. Strictly speaking, I should run the gauge through a colour blindness simulator such as Coblis to verify, which I have not done yet.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q06</span>The Grad-CAM heatmap is returned as a base64 encoded PNG inside the JSON response. Why not return a URL and let the browser fetch the image separately?</summary>
+    <div class="ans"><p>We chose the inline approach for two reasons. First, simplicity. A single round trip means less state to coordinate in the user interface. Second, the heatmap is single use and tightly bound to one analysis result, so caching it under a URL would have required additional logic for expiry. The trade-off is that each response is approximately 200 kilobytes larger. This was acceptable for version 1.0. For a high traffic deployment, I would switch to a URL based scheme.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q07</span>Race condition. The user uploads image A, does not wait and then uploads image B before the response for A returns. Which response is displayed by the user interface?</summary>
+    <div class="ans"><p>The most recent response is displayed. We track an active request identifier on the client and discard any response whose identifier does not match the current one. So if A's response returns after B has been submitted, A's result is dropped. This prevents the more serious failure mode of displaying stale results.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q08</span>Did you write any frontend unit tests, or only the end to end Playwright test?</summary>
+    <div class="ans"><p>Primarily Playwright, ma'am. We wrote a smoke test that exercises the full upload to verdict flow. We did not write component level unit tests for the trust band helper or the form validator. This is a gap in our test coverage. If I were starting the project again, I would write Vitest tests for those two helpers because they are pure functions and are straightforward to test.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q09</span>You selected Vite over Webpack. As Vite's plugin ecosystem matures over the next year, do you anticipate regretting this choice?</summary>
+    <div class="ans"><p>Vite was the correct choice for this project. The development server iteration speed was important for our timeline. For a long lived production application, the calculation might be different. For a final year project, the faster build cycle returned significant time over the course of development.</p></div>
+  </details>
+
+  <details class="qa">
+    <summary><span class="qnum">Q10</span>The trust gauge uses a pie chart layout showing band proportions rather than a horizontal bar plotting the actual score, which would be more precise. Why did you choose the pie layout?</summary>
+    <div class="ans"><p>The pie chart communicates the band ranges, which is the information the user needs to interpret the verdict. A horizontal bar would communicate the score's position on the scale. They convey different things. We chose the pie chart for the main visualisation because the band geometry is what determines the verdict. A horizontal bar is also present on slide 12 as the smaller Figure 2 strip, so both views are available to the reviewer.</p></div>
+  </details>
+
+  <!-- ============ PREP ============ -->
+  <h2 class="sect"><span class="num">§ 3 · Practical preparation</span>Before the panel arrives.</h2>
+
+  <ul class="prep">
+    <li>Open the deck in fullscreen mode before the panel arrives. Press <strong>F</strong> on the deck page.</li>
+    <li>Keep this page open on your phone or face down on the desk. Refer to it only if you lose track.</li>
+    <li>If a question stumps you, request a moment to think rather than guessing.</li>
+    <li>Hand the microphone to Sumit clearly. Phrase the handoff as "Sumit, would you like to take this?"</li>
+    <li>The demonstration is live. Connect the laptop to power. A discharged battery during a viva is a real risk.</li>
+    <li>Take a measured breath before each slide. The panel is on your side.</li>
+  </ul>
+
+</div>
+</body>
+</html>
